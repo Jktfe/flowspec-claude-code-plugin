@@ -1,0 +1,283 @@
+---
+name: spec
+description: >-
+  Use when building features from a FlowSpec YAML export, generating types,
+  implementing components, creating API routes, or writing business logic
+  from a data architecture specification.
+argument_hint: path/to/flowspec-export.yaml
+---
+
+# FlowSpec Spec-Driven Development
+
+## What This Skill Does
+
+A FlowSpec YAML export is a **structured requirements document** — it defines every data element, UI component, business logic transform, and the edges connecting them. This skill teaches you to use that spec as your source of truth while building whatever the user asks.
+
+**This is NOT a scaffolder.** You don't blindly generate boilerplate from the YAML. Instead, you load the spec, understand the data architecture, and reference it as you implement features. The spec tells you what types to create, what validation to enforce, how data flows between components, and what business logic needs to exist.
+
+---
+
+## Step 1: Load the Spec
+
+When the user provides a FlowSpec YAML (file path or pasted content):
+
+1. **Read the YAML** using the Read tool (if a file path) or parse from the message
+2. **Confirm structure** — verify it has `version`, `metadata`, `dataPoints`, `components`, `transforms`, `dataFlow`
+3. **Summarise** to the user:
+   ```
+   Loaded FlowSpec: {metadata.projectName}
+   - {dataPoints.length} data points ({captured count} captured, {inferred count} inferred)
+   - {components.length} components
+   - {transforms.length} transforms
+   - {dataFlow.length} edges
+   ```
+4. **Hold the spec in context** — reference it throughout the conversation
+
+If the user provides a file path, read it. If they paste YAML, parse it directly. Either way, confirm you've loaded it before proceeding.
+
+### Loading the Schema Reference
+
+For detailed field definitions, read the [YAML Schema Reference](references/yaml-schema.md).
+
+---
+
+## Step 2: Understand the Architecture
+
+Before writing any code, mentally map the spec to an implementation architecture:
+
+### DataPoints → Types and Schema
+
+Each DataPoint becomes a field in your type system:
+
+| DataPoint Field | Maps To |
+|----------------|---------|
+| `id` | Field name (strip `dp-` prefix, camelCase) |
+| `label` | JSDoc comment or display label |
+| `type` | TypeScript type (`string`, `number`, `boolean`, `Record<string, unknown>`, `unknown[]`) |
+| `source: captured` | Form input field — user provides this |
+| `source: inferred` | Computed property — your code produces this |
+| `constraints` | Validation rules (Zod schema, HTML attributes, server checks) |
+| `sourceDefinition` | Documents HOW this data enters the system |
+
+### Components → Routes and Pages
+
+Each Component maps to a UI page or section:
+
+| Component Field | Maps To |
+|----------------|---------|
+| `id` | Route path or component name |
+| `label` | Page title or section heading |
+| `displays` | Data the page reads and renders |
+| `captures` | Data the page collects via forms/inputs |
+| `wireframeRef` | Visual reference (if available) |
+
+**Key insight**: `displays` tells you what to fetch in your server loader/data fetcher. `captures` tells you what form fields to create and what to submit.
+
+### Transforms → Business Logic Functions
+
+Each Transform maps to a function or service:
+
+| Transform Field | Maps To |
+|----------------|---------|
+| `id` | Function name (strip `tx-` prefix, camelCase) |
+| `type: formula` | Pure calculation function |
+| `type: validation` | Validation function (returns errors or boolean) |
+| `type: workflow` | Multi-step async function (may call APIs, DB) |
+| `inputs` | Function parameters (look up DataPoint types) |
+| `outputs` | Return type (look up DataPoint types) |
+| `logic.content` | The algorithm to implement |
+
+### DataFlow → Dependency Graph
+
+Edges tell you how everything connects:
+
+| Edge Pattern | Implementation |
+|-------------|---------------|
+| Component →[flows-to]→ DataPoint | Form submission stores captured data |
+| DataPoint →[flows-to]→ Component | Server loader fetches this data for the page |
+| DataPoint →[transforms]→ Transform | Transform needs this as input |
+| Transform →[derives-from]→ DataPoint | Transform produces this as output |
+| Transform →[validates]→ DataPoint | Validation runs on this data |
+
+---
+
+## Step 3: Implementation Patterns
+
+### Pattern A: TypeScript Interfaces from DataPoints
+
+Group DataPoints by their semantic entity (use `locations` to identify which ones belong together):
+
+```typescript
+// DataPoints dp-user-email, dp-user-name, dp-account-age
+// all have locations referencing comp-profile
+interface User {
+  email: string;      // dp-user-email (captured, required, email format)
+  name: string;       // dp-user-name (captured, required)
+  accountAge: number;  // dp-account-age (inferred, min 0)
+}
+```
+
+**Rules:**
+- Group by component context (DataPoints that share the same component locations)
+- Use `source` to decide which fields are in create/update forms vs. computed
+- Use `constraints` to decide optionality and validation
+
+### Pattern B: Zod Schemas from Constraints
+
+Map constraints directly to Zod validators:
+
+| Constraint | Zod |
+|-----------|-----|
+| `required` | field is not `.optional()` |
+| `email format` | `.email()` |
+| `url format` | `.url()` |
+| `min X` | `.min(X)` |
+| `max X` | `.max(X)` |
+| `range X-Y` | `.min(X).max(Y)` |
+| `enum` | `z.enum([...])` |
+| `unique` | Custom refinement or DB constraint |
+| `date format` | `z.coerce.date()` or `.datetime()` |
+
+Only validate **captured** DataPoints on input. Inferred DataPoints are produced by your code — validate them at the transform level if needed.
+
+### Pattern C: Database Schema from DataPoints
+
+```
+captured DataPoints with no transform producing them → database columns
+inferred DataPoints → either computed columns, views, or application-level calculations
+```
+
+Use `locations` to understand relationships:
+- DataPoints appearing in multiple Components are likely core entity fields
+- DataPoints appearing in only one Component may be form-specific or page-specific
+
+### Pattern D: API Endpoints from Components
+
+Each Component with `captures` needs a write endpoint:
+```
+comp-task-form (captures: [dp-task-title, dp-task-due]) → POST /api/tasks
+```
+
+Each Component with `displays` needs a read endpoint (or server loader):
+```
+comp-task-list (displays: [dp-task-title, dp-task-count]) → GET /api/tasks (or +page.server.ts load)
+```
+
+### Pattern E: Transform Functions
+
+Implement directly from the `logic` field:
+
+```typescript
+// Transform: tx-calc-account-age
+// logic.type: formula
+// logic.content: "account_age = (today - registration_date).days"
+function calculateAccountAge(registrationDate: Date): number {
+  const today = new Date();
+  const diffMs = today.getTime() - registrationDate.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+}
+```
+
+For `decision_table` logic, implement as a switch/map:
+```typescript
+// logic.content: { "EIS": "30% relief", "SEIS": "50% relief" }
+function getTaxRelief(scheme: TaxScheme): number {
+  const rates = { EIS: 0.3, SEIS: 0.5, VCT: 0.3, none: 0 };
+  return rates[scheme];
+}
+```
+
+For `steps` logic, implement as a sequential async function:
+```typescript
+// logic.content: "1) Validate input; 2) Query database; 3) Transform result"
+async function processOrder(input: OrderInput): Promise<OrderResult> {
+  // Step 1: Validate
+  const validated = orderSchema.parse(input);
+  // Step 2: Query
+  const data = await db.query(...);
+  // Step 3: Transform
+  return transformOrderData(data);
+}
+```
+
+---
+
+## Step 4: Working with the Spec During Development
+
+### When the user asks you to build something:
+
+1. **Find relevant nodes** — search `dataPoints`, `components`, and `transforms` for anything related to the request
+2. **Trace the data flow** — follow edges from the relevant Component through its DataPoints and Transforms
+3. **Build with spec accuracy** — use exact types, constraints, and relationships from the spec
+4. **Call out spec gaps** — if the user asks for something not covered by the spec, mention it
+
+### When generating types:
+
+1. Read `dataPoints` for field names and types
+2. Read `constraints` for validation rules
+3. Group by `locations` (DataPoints on the same Component form a logical entity)
+4. Separate captured (user input) from inferred (computed) in your type design
+
+### When building a page/component:
+
+1. Find the matching Component node
+2. `displays` = data to fetch and render
+3. `captures` = form fields to create
+4. Trace edges to find which Transforms compute the displayed data
+5. Use those Transforms' `logic` to implement the computation
+
+### When implementing business logic:
+
+1. Find the matching Transform node
+2. `inputs` = function parameters (look up their types via DataPoints)
+3. `outputs` = return values (look up their types via DataPoints)
+4. `logic` = the algorithm to implement
+5. Trace edges to understand the full input/output chain
+
+---
+
+## Common Mistakes
+
+### 1. Making inferred data editable
+
+If a DataPoint has `source: inferred`, it's **computed**. Never create a form input for it. It should be calculated by a Transform and displayed read-only.
+
+### 2. Ignoring constraints
+
+Constraints are the spec author's explicit validation requirements. Every constraint should map to actual validation code — don't skip them because they seem obvious.
+
+### 3. Missing edge connections
+
+If the spec shows `DataPoint →[transforms]→ Transform →[derives-from]→ DataPoint`, your code must implement that full chain. Don't short-circuit by hardcoding the derived value.
+
+### 4. Wrong grouping
+
+Don't assume all DataPoints form a single entity. Use `locations` to understand which DataPoints are related. DataPoints that share Component locations often belong to the same entity.
+
+### 5. Ignoring sourceDefinition
+
+The `sourceDefinition` field documents HOW data enters the system. This is invaluable for understanding whether data comes from a form, an API call, a calculation, or a file upload. Read it.
+
+### 6. Treating the spec as exhaustive
+
+The spec documents the data architecture, not every implementation detail. It won't tell you about styling, animation, error states, or loading states. Use it for types, validation, and data flow — use your judgement for everything else.
+
+---
+
+## Quick Reference
+
+```
+DataPoint.source = captured  → form input, user provides
+DataPoint.source = inferred  → computed, code produces
+Component.displays           → data to fetch in loader
+Component.captures           → form fields to create
+Transform.logic              → algorithm to implement
+Edge flows-to                → data moves between nodes
+Edge derives-from            → transform produces data
+Edge transforms              → data enters a transform
+Edge validates               → transform checks data
+```
+
+For the complete YAML schema with all field types and enums, see [references/yaml-schema.md](references/yaml-schema.md).
+
+For a worked example showing the full implementation flow, see [references/implementation-walkthrough.md](references/implementation-walkthrough.md).
