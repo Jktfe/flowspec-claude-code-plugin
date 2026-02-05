@@ -45,14 +45,26 @@ Optionally include the main spec for full type and constraint information:
 
 ## Installation
 
+### From GitHub (recommended)
+
 ```bash
-claude plugin add flowspec
+claude plugin install flowspec@https://github.com/Jktfe/flowspec-claude-code-plugin
 ```
 
-Or install locally from a cloned repo:
+### Local install
+
+Clone the repo and load it with `--plugin-dir`:
 
 ```bash
-claude plugin add --local ./flowspec-claude-code-plugin
+git clone https://github.com/Jktfe/flowspec-claude-code-plugin.git
+claude --plugin-dir ./flowspec-claude-code-plugin
+```
+
+This loads the plugin for that session. To always load it, add the flag to your shell alias:
+
+```bash
+# In your .zshrc or .bashrc
+alias claude='claude --plugin-dir /path/to/flowspec-claude-code-plugin'
 ```
 
 ## How It Works
@@ -66,7 +78,7 @@ Both skills are pure knowledge — they teach Claude how to read and use FlowSpe
 
 1. Design your data architecture in [FlowSpec](https://flowspec.dev)
 2. Export the main YAML and any wireframe sub-canvases
-3. Start a Claude Code session in your project
+3. Start a Claude Code session with the plugin loaded (see Installation above)
 4. Load the spec: `/flowspec:spec ./flowspec-export.yaml`
 5. Ask Claude to build features: "Generate TypeScript types for the user profile section"
 6. For specific UI sections: `/flowspec:wireframe ./profile-header.png ./profile-header.yaml`
