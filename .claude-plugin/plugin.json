@@ -1,6 +1,9 @@
 {
   "name": "flowspec",
   "version": "1.0.0",
+  "author": {
+    "name": "James King"
+  },
   "description": "Spec-driven development from FlowSpec YAML exports. Load a data architecture spec as your source of truth for types, data flows, constraints, and business logic — or combine wireframe screenshots with placement data to implement pixel-accurate UI components.",
   "keywords": [
     "flowspec",
