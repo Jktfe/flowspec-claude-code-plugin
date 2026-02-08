@@ -1,0 +1,10 @@
+{
+  "name": "flowspec-plugins",
+  "description": "FlowSpec plugins for data architecture and spec-driven development",
+  "plugins": [
+    {
+      "name": "flowspec",
+      "source": "."
+    }
+  ]
+}
