@@ -45,6 +45,34 @@ Optionally include the main spec for full type and constraint information:
 
 ## Installation
 
+### From Marketplace (recommended)
+
+If you have [FlowSpec Desktop](https://flowspec.dev/download) installed, the marketplace is auto-configured during setup:
+
+```bash
+claude plugin install flowspec@flowspec-plugins
+```
+
+### Direct Installation
+
+Without FlowSpec Desktop, install directly from GitHub:
+
+```bash
+claude plugin install flowspec@https://github.com/Jktfe/flowspec-claude-code-plugin
+```
+
+Note: Direct GitHub installation may not work due to SSH/authentication issues. Use the marketplace method or local install instead.
+
+### Local Development
+
+Clone the repo and load it with `--plugin-dir`:
+
+```bash
+git clone https://github.com/Jktfe/flowspec-claude-code-plugin.git
+claude --plugin-dir ./flowspec-claude-code-plugin
+```
+
+This loads the plugin for that session. To always load it, add the flag to your shell alias:
 ### From GitHub (recommended)
 
 ```bash
