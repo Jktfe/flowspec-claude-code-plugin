@@ -1,10 +1,16 @@
 {
   "name": "flowspec-plugins",
   "description": "FlowSpec plugins for data architecture and spec-driven development",
+  "owner": {
+    "name": "James King"
+  },
   "plugins": [
     {
       "name": "flowspec",
-      "source": "."
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Jktfe/flowspec-claude-code-plugin.git"
+      }
     }
   ]
 }
