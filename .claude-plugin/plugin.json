@@ -1,10 +1,10 @@
 {
   "name": "flowspec",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": {
     "name": "James King"
   },
-  "description": "Spec-driven development from FlowSpec YAML exports. Load a data architecture spec as your source of truth for types, data flows, constraints, and business logic — or combine wireframe screenshots with placement data to implement pixel-accurate UI components.",
+  "description": "FlowSpec data architecture toolkit — create specs from wireframes or codebases (architect skills), then build features from those specs (spec/wireframe skills).",
   "keywords": [
     "flowspec",
     "data-architecture",
@@ -12,7 +12,8 @@
     "wireframe",
     "yaml",
     "types",
-    "code-generation",
-    "ui-implementation"
+    "mcp",
+    "chrome",
+    "canvas"
   ]
 }
