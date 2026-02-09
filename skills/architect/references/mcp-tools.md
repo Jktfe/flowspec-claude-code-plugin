@@ -384,3 +384,7 @@ Remove a region from a screen.
 | `regionId` | string | Yes | UUID of the region |
 
 **Returns:** Confirmation of removal.
+
+---
+
+> See also: `examples/lesson.md` in the main FlowSpec repo for common MCP workflow patterns and gotchas.

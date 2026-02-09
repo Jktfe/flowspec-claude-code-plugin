@@ -23,12 +23,13 @@ Same three workflows as `architect`, but uses Chrome browser tools instead of MC
 1. Call `mcp__claude-in-chrome__tabs_context_mcp` to find an existing flowspec.app tab.
 2. If no tab exists:
    ```
-   mcp__claude-in-chrome__tabs_create_mcp(url: "https://flowspec.app/editor")
+   mcp__claude-in-chrome__tabs_create_mcp(url: "https://flowspec.app/projects")
    ```
+   Navigate to https://flowspec.app/projects to browse and create projects from the dashboard, or go directly to https://flowspec.app/editor to open the canvas.
 3. Use `mcp__claude-in-chrome__read_page` to check for auth state:
    - Look for `.cl-userButtonTrigger` (Clerk user button) or project list elements
    - If not signed in: instruct user to sign in manually (Clerk SSO cannot be automated)
-4. Wait for the editor to fully load before proceeding.
+4. Wait for the dashboard or editor to fully load before proceeding.
 
 ---
 
@@ -62,11 +63,11 @@ Ask about data types, sources, business logic, constraints — same as `architec
 Assemble the YAML following the [v1.2.0 schema](references/yaml-schema.md).
 
 ### Step 4: Navigate to flowspec.app
-Ensure we have an editor tab open:
+Ensure we have a flowspec.app tab open (preferably at `/projects` for the dashboard):
 ```
 mcp__claude-in-chrome__tabs_context_mcp
 ```
-If needed, create a new project by clicking the "New Project" button.
+If needed, navigate to https://flowspec.app/projects and create a new project from the dashboard, or go directly to https://flowspec.app/editor.
 
 ### Step 5: Import YAML
 Use the synthetic file injection recipe from [chrome-recipes.md](references/chrome-recipes.md) to inject the YAML into the web app's import handler.
@@ -95,7 +96,7 @@ Use browser tools to click "Export YAML" and read the result. Review and refine 
 All codebase analysis happens locally in Claude Code — identical to `architect` UC2 Steps 1-7. See the architect skill's [codebase-analysis.md](references/codebase-analysis.md) methodology (which is the same reference used by the MCP-powered skill).
 
 ### Step 8: Create project and import
-Navigate to flowspec.app, create a new project, and import the YAML via Chrome tools.
+Navigate to https://flowspec.app/projects, create a new project from the dashboard, and import the YAML via Chrome tools.
 
 ### Step 9: Guide auto-layout
 Instruct the user to click the Auto Layout button in the toolbar, or use `javascript_tool` to trigger it.

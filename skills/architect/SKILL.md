@@ -58,6 +58,10 @@ FINALIZE (export YAML, generate tech spec)
 3. Display available projects (name, updated_at)
 ```
 
+If MCP connection fails, use the 'Setup' button on the desktop dashboard to re-run the MCP configuration wizard.
+
+> **Sync status:** After creating or modifying projects via MCP, check the SyncIndicator in the desktop dashboard toolbar to verify changes synced to the cloud. The indicator shows: green (synced), amber (syncing), red (error with retry option).
+
 ### Checkpoint 1.2: Project Selection
 Ask user:
 - **Create new project?** → `flowspec_create_project(name)`
