@@ -3,7 +3,7 @@ name: architect-web
 description: >-
   Create and manage FlowSpec data architecture projects via the web app at
   flowspec.app using Chrome browser tools. For users without the desktop app.
-  Generates YAML locally and uses light browser automation to import into
+  Generates JSON locally and uses light browser automation to import into
   the web editor. Requires the Claude in Chrome extension.
 argument_hint: "[wireframe images | codebase path | 'new project']"
 ---
@@ -12,7 +12,7 @@ argument_hint: "[wireframe images | codebase path | 'new project']"
 
 Same three workflows as `architect`, but uses Chrome browser tools instead of MCP — for users without the desktop app.
 
-**Core pattern:** Generate YAML locally in Claude Code -> inject into flowspec.app via Chrome tools -> iterate.
+**Core pattern:** Generate JSON locally in Claude Code -> inject into flowspec.app via Chrome tools -> iterate.
 
 **Requires:** Claude in Chrome extension (`mcp__claude-in-chrome__*` tools).
 
@@ -27,8 +27,8 @@ Same three workflows as `architect`, but uses Chrome browser tools instead of MC
    ```
    Navigate to https://flowspec.app/projects to browse and create projects from the dashboard, or go directly to https://flowspec.app/editor to open the canvas.
 3. Use `mcp__claude-in-chrome__read_page` to check for auth state:
-   - Look for `.cl-userButtonTrigger` (Clerk user button) or project list elements
-   - If not signed in: instruct user to sign in manually (Clerk SSO cannot be automated)
+   - Look for `.signout-btn` or user email display to confirm signed-in state
+   - If not signed in: instruct user to sign in manually at flowspec.app/sign-in
 4. Wait for the dashboard or editor to fully load before proceeding.
 
 ---
@@ -37,9 +37,9 @@ Same three workflows as `architect`, but uses Chrome browser tools instead of MC
 
 | Action | Method |
 |--------|--------|
-| Generate YAML | Locally in Claude Code (same logic as `architect`) |
-| Import YAML into project | `javascript_tool` with synthetic file injection (see [chrome-recipes.md](references/chrome-recipes.md)) |
-| Export YAML from project | Click Export button via `javascript_tool`, then `read_page` |
+| Generate JSON | Locally in Claude Code (same logic as `architect`) |
+| Import JSON into project | `javascript_tool` with synthetic file injection (see [chrome-recipes.md](references/chrome-recipes.md)) |
+| Export JSON from project | Click Export button via `javascript_tool`, then `read_page` |
 | Create new project | Click "New Project" button via browser tools |
 | Upload wireframe images | **User does manually** (browser file picker security) |
 | Annotate screen regions | **User does manually** (drag-to-create is more ergonomic) |
@@ -59,8 +59,8 @@ Use Claude vision to examine wireframe images the user provides:
 ### Step 2: Interview user
 Ask about data types, sources, business logic, constraints — same as `architect` UC1 Step 4.
 
-### Step 3: Build YAML spec
-Assemble the YAML following the [v1.2.0 schema](references/yaml-schema.md).
+### Step 3: Build JSON spec
+Assemble the JSON following the [v1.2.0 schema](references/yaml-schema.md).
 
 ### Step 4: Navigate to flowspec.app
 Ensure we have a flowspec.app tab open (preferably at `/projects` for the dashboard):
@@ -69,8 +69,8 @@ mcp__claude-in-chrome__tabs_context_mcp
 ```
 If needed, navigate to https://flowspec.app/projects and create a new project from the dashboard, or go directly to https://flowspec.app/editor.
 
-### Step 5: Import YAML
-Use the synthetic file injection recipe from [chrome-recipes.md](references/chrome-recipes.md) to inject the YAML into the web app's import handler.
+### Step 5: Import JSON
+Use the synthetic file injection recipe from [chrome-recipes.md](references/chrome-recipes.md) to inject the JSON into the web app's import handler.
 
 ### Step 6: Guide wireframe upload
 Instruct the user to:
@@ -86,7 +86,7 @@ Instruct the user to:
 3. Name each region and link data elements using the region panel
 
 ### Step 8: Export and iterate
-Use browser tools to click "Export YAML" and read the result. Review and refine the spec, then re-import if needed.
+Use browser tools to click "Export JSON" and read the result. Review and refine the spec, then re-import if needed.
 
 ---
 
@@ -96,13 +96,13 @@ Use browser tools to click "Export YAML" and read the result. Review and refine 
 All codebase analysis happens locally in Claude Code — identical to `architect` UC2 Steps 1-7. See the architect skill's [codebase-analysis.md](references/codebase-analysis.md) methodology (which is the same reference used by the MCP-powered skill).
 
 ### Step 8: Create project and import
-Navigate to https://flowspec.app/projects, create a new project from the dashboard, and import the YAML via Chrome tools.
+Navigate to https://flowspec.app/projects, create a new project from the dashboard, and import the JSON via Chrome tools.
 
 ### Step 9: Guide auto-layout
 Instruct the user to click the Auto Layout button in the toolbar, or use `javascript_tool` to trigger it.
 
 ### Step 10: Export and validate
-Export YAML via browser tools and validate the spec locally.
+Export JSON via browser tools and validate the spec locally.
 
 ---
 
@@ -114,10 +114,10 @@ User designs in an external tool and provides screenshots, or starts with an emp
 ### Step 2: Guide screen creation
 Instruct the user to create screens and upload images via the web UI.
 
-### Step 3: Build YAML for data architecture
+### Step 3: Build JSON for data architecture
 Create dataPoints, components, transforms for the screen's data needs.
 
-### Step 4: Import YAML
+### Step 4: Import JSON
 Import via Chrome tools using the synthetic file injection recipe.
 
 ### Step 5: Guide region annotation
@@ -127,10 +127,10 @@ Same as UC1 Step 7 — user annotates regions manually in the web UI.
 
 ## Limitations
 
-- **Cannot automate Clerk authentication** — user must sign in manually
+- **Cannot automate authentication** — user must sign in manually
 - **Image upload requires user interaction** — browser file picker security prevents automation
 - **Region annotation is best done manually** — the web UI's drag-to-create is more ergonomic than coordinate-based automation
-- **Large YAML (500+ lines)** may need manual file import as fallback — copy YAML to clipboard, user pastes or uses file dialog
+- **Large JSON files** may need manual file import as fallback — copy JSON to clipboard, user pastes or uses file dialog
 - **DOM selectors may change** — if the web app UI updates, the Chrome recipes in `references/chrome-recipes.md` need updating
 
 ---

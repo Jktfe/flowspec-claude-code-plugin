@@ -6,12 +6,12 @@ Concrete JavaScript snippets for interacting with flowspec.app via `mcp__claude-
 
 ## Check Auth State
 
-Verify the user is signed in by looking for the Clerk user button:
+Verify the user is signed in by checking for the sign-out button:
 
 ```javascript
 // Returns true if signed in, false otherwise
-const userBtn = document.querySelector('.cl-userButtonTrigger');
-const isSignedIn = !!userBtn;
+const signoutBtn = document.querySelector('.signout-btn');
+const isSignedIn = !!signoutBtn;
 JSON.stringify({ isSignedIn });
 ```
 
@@ -55,23 +55,23 @@ if (newProjectBtn) {
 
 ---
 
-## Import YAML via Synthetic File Injection
+## Import JSON via Synthetic File Injection
 
-This is the core recipe — creates a synthetic `File` object and injects it into the hidden file input used by the "Import YAML" button.
+This is the core recipe — creates a synthetic `File` object and injects it into the hidden file input used by the "Import JSON" button.
 
 **DOM target:** `label.import-btn > input[type="file"]` (from `Sidebar.svelte:405-419`)
 
 ```javascript
-const yamlContent = `YAML_CONTENT_HERE`;
+const jsonContent = `JSON_CONTENT_HERE`;
 
-// Find the hidden file input inside the Import YAML label
+// Find the hidden file input inside the Import JSON label
 const fileInput = document.querySelector('.import-btn input[type="file"]');
 if (!fileInput) {
   'Import file input not found — ensure the sidebar is visible';
 } else {
-  // Create a synthetic File from the YAML string
-  const blob = new Blob([yamlContent], { type: 'application/x-yaml' });
-  const file = new File([blob], 'import.yaml', { type: 'application/x-yaml' });
+  // Create a synthetic File from the JSON string
+  const blob = new Blob([jsonContent], { type: 'application/json' });
+  const file = new File([blob], 'import.json', { type: 'application/json' });
 
   // Create a synthetic FileList via DataTransfer
   const dt = new DataTransfer();
@@ -81,27 +81,27 @@ if (!fileInput) {
   // Dispatch change event to trigger the onchange handler
   fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-  'YAML imported successfully (' + yamlContent.length + ' chars)';
+  'JSON imported successfully (' + jsonContent.length + ' chars)';
 }
 ```
 
-**Important:** Replace `YAML_CONTENT_HERE` with the actual YAML string. Escape backticks and `${` sequences if present in the YAML.
+**Important:** Replace `JSON_CONTENT_HERE` with the actual JSON string. Escape backticks and `${` sequences if present in the JSON.
 
 ---
 
-## Export YAML
+## Export JSON
 
-Click the "Export YAML" button. The export triggers a file download, so we need to intercept it:
+Click the "Export JSON" button. The export triggers a file download, so we need to intercept it:
 
 ```javascript
-// Override the default download to capture the YAML content
+// Override the default download to capture the JSON content
 const buttons = Array.from(document.querySelectorAll('button'));
-const exportBtn = buttons.find(b => b.textContent.trim().includes('Export YAML'));
+const exportBtn = buttons.find(b => b.textContent.trim().includes('Export JSON'));
 if (exportBtn) {
   exportBtn.click();
-  'Clicked Export YAML — check for downloaded file or use read_page to capture content';
+  'Clicked Export JSON — check for downloaded file or use read_page to capture content';
 } else {
-  'Export YAML button not found';
+  'Export JSON button not found';
 }
 ```
 
@@ -165,5 +165,5 @@ if (nameInput) {
 
 - **DOM selectors are based on the current Sidebar.svelte implementation.** If the web app UI changes, these selectors may need updating.
 - **The synthetic file injection bypasses the native file picker**, which cannot be triggered programmatically due to browser security.
-- **Large YAML files (500+ lines)** may cause issues when injected as inline JavaScript strings. If this happens, instruct the user to manually import via the file dialog instead.
+- **Large JSON files** may cause issues when injected as inline JavaScript strings. If this happens, instruct the user to manually import via the file dialog instead.
 - **Always verify the sidebar is visible** before attempting to interact with its elements. The sidebar is the primary control panel on the left side of the editor.
