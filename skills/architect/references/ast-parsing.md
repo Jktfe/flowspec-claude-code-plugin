@@ -4,7 +4,7 @@ This document provides framework-specific Abstract Syntax Tree (AST) parsing tec
 
 ## Overview
 
-**Goal:** Convert source code into FlowSpec YAML by parsing:
+**Goal:** Convert source code into FlowSpec JSON by parsing:
 1. **Type definitions** → DataPoints
 2. **Routes/Pages** → Components
 3. **Utility functions** → Transforms
@@ -691,9 +691,9 @@ switch (framework) {
   // ... other frameworks
 }
 
-// Build mini-YAMLs per module
+// Build mini-specs per module
 for (const component of components) {
-  const miniYaml = buildMiniYaml({
+  const miniSpec = buildMiniSpec({
     dataPoints: filterRelevant(dataPoints, component),
     component: component,
     transforms: filterRelevant(transforms, component)

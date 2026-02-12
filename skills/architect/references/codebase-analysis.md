@@ -11,14 +11,25 @@ An 8-step methodology for mapping an existing codebase's data architecture into 
 2. Count **utility/service modules** (the logic layer)
 3. Count **database tables or API endpoints** (the data layer)
 4. Identify **domains** — logical groupings of related functionality
+5. **Scan for `@flowspec` annotations** — check if the codebase-indexer skill has already been run
+
+### Annotation Check
+
+Before starting discovery (Steps 3-6), scan source files for `@flowspec` comments:
+
+```
+grep -r "// @flowspec" src/ --include="*.ts" --include="*.tsx" --include="*.svelte" --include="*.jsx"
+```
+
+If annotations are found, they provide pre-indexed elements (datapoints, components, transforms, edges) that the codebase-indexer skill has already identified and validated. Use these as the **starting baseline** — skip re-discovering annotated elements during Steps 3-6 and focus on gaps.
 
 ### Granularity Decision Tree
 
 | Routes | Tables/Endpoints | Strategy |
 |--------|-----------------|----------|
-| < 10   | < 10            | Single YAML, no domain grouping |
-| 10-30  | 10-30           | Single YAML with domain sections (comments) |
-| 30+    | 30+             | Split into separate YAML per domain |
+| < 10   | < 10            | Single JSON spec, no domain grouping |
+| 10-30  | 10-30           | Single JSON spec with domain sections |
+| 30+    | 30+             | Split into separate JSON spec per domain |
 
 ### Framework Detection
 
@@ -168,23 +179,34 @@ Transforms represent **business logic** — functions that take data in and prod
    - **logic**: Algorithm description
 
 ### Logic Documentation
-```yaml
-# Simple formula
-logic:
-  type: formula
-  content: "total = price * quantity * (1 + tax_rate)"
+```json
+{
+  "logic": {
+    "type": "formula",
+    "content": "total = price * quantity * (1 + tax_rate)"
+  }
+}
+```
 
-# Decision table (branching logic)
-logic:
-  type: decision_table
-  content:
-    condition_a: "result when A"
-    condition_b: "result when B"
+```json
+{
+  "logic": {
+    "type": "decision_table",
+    "content": {
+      "condition_a": "result when A",
+      "condition_b": "result when B"
+    }
+  }
+}
+```
 
-# Multi-step workflow
-logic:
-  type: steps
-  content: "1) Validate input; 2) Query database; 3) Transform result; 4) Cache and return"
+```json
+{
+  "logic": {
+    "type": "steps",
+    "content": "1) Validate input; 2) Query database; 3) Transform result; 4) Cache and return"
+  }
+}
 ```
 
 ### What Counts as a Transform
@@ -256,18 +278,18 @@ For each page route, trace the full data path:
 
 ---
 
-## Step 7: Produce YAML
+## Step 7: Produce JSON
 
-Assemble all discovered nodes and edges into FlowSpec YAML v1.2.0 format. See [yaml-schema.md](yaml-schema.md) for the complete schema.
+Assemble all discovered nodes and edges into FlowSpec JSON format. See [json-schema.md](json-schema.md) for the complete schema.
 
 ### File Naming
 ```
-flowspec-{project-name}.yaml           (single file)
-flowspec-{project-name}-{domain}.yaml  (per-domain split)
+flowspec-{project-name}.json           (single file)
+flowspec-{project-name}-{domain}.json  (per-domain split)
 ```
 
 ### Quality Checklist
-Before finalising the YAML:
+Before finalising the JSON:
 - [ ] Every `captured` DataPoint is captured by at least one Component
 - [ ] Every `inferred` DataPoint has at least one Transform producing it
 - [ ] Every Transform has at least one input and one output

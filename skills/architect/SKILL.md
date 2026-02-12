@@ -18,7 +18,7 @@ Creates FlowSpec projects — the reverse direction of `spec`/`wireframe`. This 
 
 **Key Features:**
 - Screen-by-screen interview loops with user confirmation
-- Progressive YAML assembly (mini-YAMLs → merged spec)
+- Progressive JSON assembly (mini-specs → merged spec)
 - Quality gates with enhanced analysis (naming, fuzzy duplicates, subgraphs)
 - Semantic positioning with natural language commands
 - Resume capability for interrupted workflows
@@ -36,13 +36,13 @@ GATHER (collect inputs: images/codebase/designs)
   ↓
 INTERVIEW (iterative user clarification, screen-by-screen)
   ↓
-GENERATE (build YAML, progressive assembly)
+GENERATE (build JSON, progressive assembly)
   ↓
 VALIDATE (enhanced analysis, quality checks)
   ↓
 REFINE (layout, regions, smart positioning)
   ↓
-FINALIZE (export YAML, generate tech spec)
+FINALIZE (export JSON, generate tech spec)
 ```
 
 **State Persistence:** Use Task system (TaskCreate/TaskUpdate) to track state and enable resume.
@@ -86,7 +86,7 @@ Analyse user input to determine workflow:
 | Wireframe images (PNG/JPG) | **UC1: Wireframe → Dataflow** |
 | Codebase path (directory) | **UC2: Codebase → Dataflow** |
 | "Design screens" / "new project" | **UC3: Design New Screens** |
-| YAML file | Direct import (skip to VALIDATE) |
+| JSON file | Direct import (skip to VALIDATE) |
 
 Save `useCase` to state.
 
@@ -168,61 +168,72 @@ Q5: "What business logic affects this data?"
    → validations, calculations, workflows
 ```
 
-**Step 4.3:** Build mini-YAML for this screen
-Assemble a mini-YAML fragment:
+**Step 4.3:** Build mini-spec for this screen
+Assemble a mini-spec fragment:
 
-```yaml
-# Mini-YAML for "Login Page"
-dataPoints:
-  - id: email_input
-    label: Email Address
-    type: string
-    source: captured
-    constraints: [required, email-format]
-
-  - id: auth_token
-    label: Auth Token
-    type: string
-    source: inferred
-    sourceDefinition: "API /auth/login response"
-
-components:
-  - id: login_page
-    label: Login Page
-    displays: [auth_token]
-    captures: [email_input, password_input]
-
-transforms:
-  - id: validate_email
-    label: Validate Email Format
-    type: validation
-    inputs: [email_input]
-    outputs: [email_valid]
-    logic:
-      type: formula
-      content: "regex match @example.com"
+```json
+{
+  "screenName": "Login Page",
+  "dataPoints": [
+    {
+      "id": "email_input",
+      "label": "Email Address",
+      "type": "string",
+      "source": "captured",
+      "constraints": ["required", "email-format"]
+    },
+    {
+      "id": "auth_token",
+      "label": "Auth Token",
+      "type": "string",
+      "source": "inferred",
+      "sourceDefinition": "API /auth/login response"
+    }
+  ],
+  "components": [
+    {
+      "id": "login_page",
+      "label": "Login Page",
+      "displays": ["auth_token"],
+      "captures": ["email_input", "password_input"]
+    }
+  ],
+  "transforms": [
+    {
+      "id": "validate_email",
+      "label": "Validate Email Format",
+      "type": "validation",
+      "inputs": ["email_input"],
+      "outputs": ["email_valid"],
+      "logic": {
+        "type": "formula",
+        "content": "regex match @example.com"
+      }
+    }
+  ]
+}
 ```
 
 **Step 4.4:** User confirmation checkpoint
 ```
 ASK: "Screen '${screenName}' complete? [yes / no / refine]"
 
-- yes → save mini-YAML, move to next screen
+- yes → save mini-spec, move to next screen
 - no → re-interview this screen (go back to Step 4.2)
-- refine → ask specific clarifications, update mini-YAML
+- refine → ask specific clarifications, update mini-spec
 ```
 
 **Checkpoint 4.1:** All screens interviewed
 ```
-✓ Mini-YAMLs collected: ${miniYamls.length} → state: GENERATE
+✓ Mini-specs collected: ${miniSpecs.length} → state: GENERATE
 ```
 
 ---
 
-### Phase 5: GENERATE (YAML Assembly)
+### Phase 5: GENERATE (JSON Assembly)
 
-**Step 5.1:** Merge mini-YAMLs
-- Combine all screen mini-YAMLs into full spec
+**Step 5.1:** Merge mini-specs
+- Combine all screen mini-specs into full spec
 - Deduplicate node IDs (same label + type → single node)
 - Merge constraints and references
 
@@ -234,45 +245,54 @@ Trace data paths between screens:
 
 **Step 5.3:** Add tables (if applicable)
 If database tables or API endpoints were mentioned:
-```yaml
-tables:
-  - id: users_table
-    label: Users
-    columns:
-      - name: email
-        type: string
-      - name: created_at
-        type: string
-    sourceType: database
-    endpoint: "postgresql://users"
+```json
+{
+  "tables": [
+    {
+      "id": "users_table",
+      "label": "Users",
+      "columns": [
+        { "name": "email", "type": "string" },
+        { "name": "created_at", "type": "string" }
+      ],
+      "sourceType": "database",
+      "endpoint": "postgresql://users"
+    }
+  ]
+}
 ```
 
 **Step 5.4:** Add screens metadata
 Include screen IDs from Phase 3 (regions added in REFINE):
-```yaml
-screens:
-  - id: screen_1
-    name: "Login Page"
-    imageUrl: "https://..."
-    imageWidth: 1920
-    imageHeight: 1080
-    regions: []  # Added in REFINE phase
+```json
+{
+  "screens": [
+    {
+      "id": "screen_1",
+      "name": "Login Page",
+      "imageUrl": "https://...",
+      "imageWidth": 1920,
+      "imageHeight": 1080,
+      "regions": []
+    }
+  ]
+}
 ```
 
-**Checkpoint 5.1:** YAML generated
+**Checkpoint 5.1:** JSON generated
 ```
-✓ Full YAML spec assembled → state: VALIDATE
+✓ Full JSON spec assembled → state: VALIDATE
 ```
 
 ---
 
 ### Phase 6: VALIDATE (Quality Checks)
 
-**Step 6.1:** Import YAML with auto-layout
+**Step 6.1:** Import spec with auto-layout
 ```
 flowspec_import_yaml(
   projectId,
-  yaml: fullYaml,
+  yaml: fullSpec,
   autoLayout: true,
   layoutDirection: "TB"
 )
@@ -297,7 +317,7 @@ IF issues found:
   → Display analysis results
   → Ask user: "Fix automatically [auto] or manually [manual] or skip [skip]?"
 
-  - auto → apply suggested fixes, re-import YAML, re-validate
+  - auto → apply suggested fixes, re-import spec, re-validate
   - manual → prompt specific fixes, user edits, re-import
   - skip → proceed with warnings
 
@@ -366,12 +386,12 @@ IF user selects direction:
 
 ### Phase 8: FINALIZE (Export & Tech Spec)
 
-**Step 8.1:** Export final YAML
+**Step 8.1:** Export final JSON
 ```
-yaml = flowspec_get_yaml(projectId)
+spec = flowspec_get_yaml(projectId)
 ```
 
-Save to file: `{projectName}_flowspec.yaml`
+Save to file: `{projectName}_flowspec.json`
 
 **Step 8.2:** Generate tech spec markdown
 Create structured implementation guide:
@@ -434,13 +454,13 @@ Generated: {timestamp}
 - Screens: ${screenCount}
 - Nodes: ${nodeCount} (DataPoints: ${dp}, Components: ${comp}, Transforms: ${tf})
 - Edges: ${edgeCount}
-- YAML: ${yamlFilePath}
+- JSON: ${jsonFilePath}
 - Tech Spec: ${specFilePath}
 
 Next steps:
-1. Review YAML in FlowSpec desktop app
+1. Review JSON in FlowSpec desktop app
 2. Use tech spec for implementation planning
-3. Generate code with: /spec ${yamlFilePath}
+3. Generate code with: /spec ${jsonFilePath}
 ```
 
 **Checkpoint 8.1:** Workflow complete
@@ -467,16 +487,33 @@ See [codebase-analysis.md](references/codebase-analysis.md) and [ast-parsing.md]
    - Remix: app/routes/
 
 2. Count routes/pages (determine granularity)
-   - < 10 pages → single YAML
+   - < 10 pages → single JSON spec
    - 10-30 pages → split by domain (auth, admin, public)
-   - > 30 pages → per-module YAMLs
+   - > 30 pages → per-module JSON specs
 
 3. Identify database/API access
    - SQL queries, ORM models
    - API fetch calls, endpoints
 ```
 
-**Step 3.2:** Check existing specs
+**Step 3.2:** Check for `@flowspec` annotations
+```
+1. Scan source files for @flowspec comments left by the codebase-indexer skill:
+   grep -r "// @flowspec" src/ --include="*.ts" --include="*.tsx" --include="*.svelte" --include="*.jsx"
+
+2. IF annotations found:
+   - Parse each: // @flowspec dp-name: type, source, constraints
+   - Build initial node list from annotations (already validated by indexer)
+   - Report: "Found ${count} pre-indexed elements in ${fileCount} files"
+   - Use these as the BASE for the spec — skip re-discovering them in INTERVIEW
+
+3. IF no annotations found:
+   - Proceed with full AST parsing in INTERVIEW phase
+```
+
+> **Why check annotations?** The `/flowspec:annotate` skill (codebase-indexer) may have already analysed this codebase and left `@flowspec` comments marking datapoints, components, transforms, and edges. Using these avoids duplicate work and ensures consistency with prior analysis.
+
+**Step 3.3:** Check existing specs
 ```
 projects = flowspec_list_projects()
 existingNodes = flowspec_search_nodes(query: "codebase-relevant-term")
@@ -487,7 +524,7 @@ IF existing project found:
 
 **Checkpoint 3.1:** Scope defined
 ```
-✓ Framework: ${framework}, Routes: ${routeCount} → state: INTERVIEW
+✓ Framework: ${framework}, Routes: ${routeCount}, Annotations: ${annotationCount} → state: INTERVIEW
 ```
 
 ---
@@ -527,16 +564,16 @@ Use AST parsing techniques from [ast-parsing.md](references/ast-parsing.md):
 - **Svelte:** `svelte/compiler` + regex for runes
 - **React:** `@babel/parser` + `@babel/traverse`
 
-**Step 4.3:** Progressive mini-YAML generation
+**Step 4.3:** Progressive mini-spec generation
 For each module/route:
 1. Parse file → extract entities
-2. Build mini-YAML fragment
+2. Build mini-spec fragment
 3. **User confirmation:** "Module '${moduleName}' mapped. Correct? [yes/no/refine]"
-4. Save mini-YAML
+4. Save mini-spec
 
 **Checkpoint 4.1:** All modules parsed
 ```
-✓ Mini-YAMLs: ${miniYamls.length} → state: GENERATE
+✓ Mini-specs: ${miniSpecs.length} → state: GENERATE
 ```
 
 ---
@@ -614,7 +651,7 @@ Q4: Constraints? → required, enum, range, format
 Q5: Related transforms? → validation, calculation, workflow
 ```
 
-**Step 4.3:** Build mini-YAML
+**Step 4.3:** Build mini-spec
 Same as UC1 Phase 4 Step 4.3.
 
 **Step 4.4:** Confirmation
@@ -635,7 +672,7 @@ Follow GENERATE → VALIDATE → REFINE → FINALIZE phases.
 **Merge mode in GENERATE (UC3-specific):**
 ```
 IF extending existing project:
-  flowspec_import_yaml(projectId, yaml: miniYaml, merge: true)
+  flowspec_import_yaml(projectId, yaml: miniSpec, merge: true)
   # Merges new nodes with existing, preserves structure
 ```
 
@@ -688,13 +725,13 @@ IF any check fails:
 
 ```
 1. Check Task list for latest state
-2. Retrieve saved context (projectId, useCase, miniYamls, screenIds)
+2. Retrieve saved context (projectId, useCase, miniSpecs, screenIds)
 3. Resume from last completed phase:
    - INIT → start over (quick)
    - ROUTE → start over (quick)
    - GATHER → resume uploads/parsing
    - INTERVIEW → resume from last confirmed screen
-   - GENERATE → regenerate from saved mini-YAMLs
+   - GENERATE → regenerate from saved mini-specs
    - VALIDATE → re-run analysis
    - REFINE → continue layout/regions
    - FINALIZE → re-export
@@ -727,17 +764,17 @@ IF state transition blocked:
 
 ### Progressive Refinement
 ```
-1. Import initial YAML (coarse-grained)
+1. Import initial JSON spec (coarse-grained)
 2. Run analysis → identify gaps
 3. Add missing nodes/edges incrementally
 4. Re-import with merge: true
 5. Validate again → iterate
 ```
 
-### Multi-YAML Projects
+### Multi-spec Projects
 ```
 # For large codebases
-1. Generate per-domain YAMLs (auth.yaml, admin.yaml, public.yaml)
+1. Generate per-domain JSON specs (auth.json, admin.json, public.json)
 2. Import each with merge: true
 3. Deduplicate shared DataPoints
 4. Consolidate cross-domain edges
@@ -747,7 +784,7 @@ IF state transition blocked:
 
 ## Tool Reference
 
-See [yaml-schema.md](references/yaml-schema.md) for v1.2.0 YAML structure.
+See [json-schema.md](references/json-schema.md) for JSON spec structure.
 
 See [workflow-orchestration.md](references/workflow-orchestration.md) for state machine details.
 
@@ -763,15 +800,15 @@ A FlowSpec project is **complete** when:
 
 ✅ All phases reached FINALIZE state
 ✅ Quality gate passed (0 issues)
-✅ YAML exported to file
+✅ JSON exported to file
 ✅ Tech spec generated
 ✅ Regions linked to screens (if wireframes used)
 ✅ Layout optimized (auto-layout or smart layout applied)
 ✅ User confirmed satisfaction
 
 **Output artifacts:**
-- `${projectName}_flowspec.yaml` (importable spec)
+- `${projectName}_flowspec.json` (importable spec)
 - `${projectName}_tech_spec.md` (implementation guide)
 - FlowSpec project (viewable in desktop app)
 
-**Next step:** Generate implementation code with `/spec ${projectName}_flowspec.yaml`
+**Next step:** Generate implementation code with `/spec ${projectName}_flowspec.json`

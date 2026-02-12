@@ -1,27 +1,27 @@
 ---
 name: spec
 description: >-
-  Use when building features from a FlowSpec YAML export, generating types,
+  Use when building features from a FlowSpec JSON export, generating types,
   implementing components, creating API routes, or writing business logic
   from a data architecture specification.
-argument_hint: path/to/flowspec-export.yaml
+argument_hint: path/to/flowspec-export.json
 ---
 
 # FlowSpec Spec-Driven Development
 
 ## What This Skill Does
 
-A FlowSpec YAML export is a **structured requirements document** — it defines every data element, UI component, business logic transform, and the edges connecting them. This skill teaches you to use that spec as your source of truth while building whatever the user asks.
+A FlowSpec JSON export is a **structured requirements document** — it defines every data element, UI component, business logic transform, and the edges connecting them. This skill teaches you to use that spec as your source of truth while building whatever the user asks.
 
-**This is NOT a scaffolder.** You don't blindly generate boilerplate from the YAML. Instead, you load the spec, understand the data architecture, and reference it as you implement features. The spec tells you what types to create, what validation to enforce, how data flows between components, and what business logic needs to exist.
+**This is NOT a scaffolder.** You don't blindly generate boilerplate from the JSON. Instead, you load the spec, understand the data architecture, and reference it as you implement features. The spec tells you what types to create, what validation to enforce, how data flows between components, and what business logic needs to exist.
 
 ---
 
 ## Step 1: Load the Spec
 
-When the user provides a FlowSpec YAML (file path or pasted content):
+When the user provides a FlowSpec JSON (file path or pasted content):
 
-1. **Read the YAML** using the Read tool (if a file path) or parse from the message
+1. **Read the JSON** using the Read tool (if a file path) or parse from the message
 2. **Confirm structure** — verify it has `version`, `metadata`, `dataPoints`, `components`, `transforms`, `dataFlow`
 3. **Summarise** to the user:
    ```
@@ -33,11 +33,11 @@ When the user provides a FlowSpec YAML (file path or pasted content):
    ```
 4. **Hold the spec in context** — reference it throughout the conversation
 
-If the user provides a file path, read it. If they paste YAML, parse it directly. Either way, confirm you've loaded it before proceeding.
+If the user provides a file path, read it. If they paste JSON, parse it directly. Either way, confirm you've loaded it before proceeding.
 
 ### Loading the Schema Reference
 
-For detailed field definitions, read the [YAML Schema Reference](references/yaml-schema.md).
+For detailed field definitions, read the [JSON Schema Reference](references/json-schema.md).
 
 ---
 
@@ -278,6 +278,6 @@ Edge transforms              → data enters a transform
 Edge validates               → transform checks data
 ```
 
-For the complete YAML schema with all field types and enums, see [references/yaml-schema.md](references/yaml-schema.md).
+For the complete JSON schema with all field types and enums, see [references/json-schema.md](references/json-schema.md).
 
 For a worked example showing the full implementation flow, see [references/implementation-walkthrough.md](references/implementation-walkthrough.md).

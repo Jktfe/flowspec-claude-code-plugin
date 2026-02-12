@@ -20,13 +20,13 @@ List all FlowSpec projects with names and dates.
 
 ### flowspec_get_yaml
 
-Get the full YAML spec for a FlowSpec project.
+Get the full JSON spec for a FlowSpec project.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `projectId` | string | Yes | UUID of the project |
 
-**Returns:** YAML string in v1.2.0 format (dataPoints, components, transforms, tables, dataFlow, screens).
+**Returns:** JSON string with spec data (dataPoints, components, transforms, tables, dataFlow, screens).
 
 ---
 
@@ -239,12 +239,12 @@ Run quality analysis on a project.
 
 ### flowspec_import_yaml
 
-Import a YAML spec into a project.
+Import a spec into a project.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `projectId` | string | Yes | UUID of the target project |
-| `yaml` | string | Yes | YAML spec string (v1.2.0 format) |
+| `yaml` | string | Yes | JSON spec string |
 | `autoLayout` | boolean | No | Run dagre layout after import (default: `true`) |
 | `layoutDirection` | enum | No | `TB` (default), `BT`, `LR`, `RL` |
 | `merge` | boolean | No | `true` = add to existing, `false` = replace (default: `false`) |

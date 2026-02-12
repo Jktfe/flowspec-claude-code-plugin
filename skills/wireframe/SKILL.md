@@ -2,9 +2,9 @@
 name: wireframe
 description: >-
   Use when implementing a UI component from a wireframe screenshot and FlowSpec
-  sub-canvas YAML. Combines visual analysis of the screenshot with placement
+  sub-canvas JSON. Combines visual analysis of the screenshot with placement
   coordinates to understand what data appears where on screen.
-argument_hint: path/to/screenshot.png path/to/subcanvas.yaml [path/to/main-spec.yaml]
+argument_hint: path/to/screenshot.png path/to/subcanvas.json [path/to/main-spec.json]
 ---
 
 # FlowSpec Wireframe Component Design
@@ -14,11 +14,11 @@ argument_hint: path/to/screenshot.png path/to/subcanvas.yaml [path/to/main-spec.
 A FlowSpec wireframe export consists of two files:
 
 1. **A screenshot image** — a wireframe or UI mockup captured from the FlowSpec canvas
-2. **A sub-canvas YAML** — structured data listing which data elements are placed where on the screenshot, using percentage-based coordinates
+2. **A sub-canvas JSON** — structured data listing which data elements are placed where on the screenshot, using percentage-based coordinates
 
 Together, they give you both **visual context** (what it looks like) and **data context** (what information goes where). This skill teaches you to use both to implement accurate UI components.
 
-Optionally, a **main FlowSpec YAML** can be provided alongside. When available, it enriches each placement with full type information, constraints, and data flow context.
+Optionally, a **main FlowSpec JSON** can be provided alongside. When available, it enriches each placement with full type information, constraints, and data flow context.
 
 ---
 
@@ -27,11 +27,11 @@ Optionally, a **main FlowSpec YAML** can be provided alongside. When available, 
 ### Required Files
 
 1. **Screenshot image**: Read it with the Read tool (Claude can view images). Analyse the visual layout, hierarchy, spacing, and patterns.
-2. **Sub-canvas YAML**: Read it with the Read tool and parse the placements.
+2. **Sub-canvas JSON**: Read it with the Read tool and parse the placements.
 
 ### Optional File
 
-3. **Main spec YAML**: If provided, load it to cross-reference `sourceNodeId` values for full type and constraint data.
+3. **Main spec JSON**: If provided, load it to cross-reference `sourceNodeId` values for full type and constraint data.
 
 ### Confirm Loading
 
@@ -66,7 +66,7 @@ This visual analysis establishes the **structural intent** of the UI before you 
 
 ## Step 3: Map Placements to the Visual
 
-Now overlay the sub-canvas YAML placements onto your visual understanding.
+Now overlay the sub-canvas JSON placements onto your visual understanding.
 
 ### Reading Placement Coordinates
 
@@ -84,11 +84,13 @@ Positions are **percentages** of the screenshot dimensions:
 ### Example Analysis
 
 Given placements:
-```yaml
-- sourceNodeLabel: "User Name"      # position: x:15, y:6
-- sourceNodeLabel: "User Email"     # position: x:15, y:12
-- sourceNodeLabel: "User Avatar"    # position: x:5, y:8
-- sourceNodeLabel: "Account Age"    # position: x:85, y:8
+```json
+[
+  { "sourceNodeLabel": "User Name",   "position": { "x": 15, "y": 6 } },
+  { "sourceNodeLabel": "User Email",  "position": { "x": 15, "y": 12 } },
+  { "sourceNodeLabel": "User Avatar", "position": { "x": 5,  "y": 8 } },
+  { "sourceNodeLabel": "Account Age", "position": { "x": 85, "y": 8 } }
+]
 ```
 
 Interpretation:
@@ -108,7 +110,7 @@ Interpretation:
 
 ## Step 4: Cross-Reference the Main Spec
 
-If the main FlowSpec YAML is available, use `sourceNodeId` to look up full details:
+If the main FlowSpec JSON is available, use `sourceNodeId` to look up full details:
 
 ### For DataPoints (sourceNodeType: "datapoint")
 
@@ -183,7 +185,7 @@ Don't try to pixel-match the screenshot — use it as a structural guide. The pe
 
 ### 1. Ignoring the screenshot
 
-The screenshot provides visual context that the YAML alone cannot. Don't just read the YAML and ignore the image. The screenshot shows:
+The screenshot provides visual context that the JSON alone cannot. Don't just read the JSON and ignore the image. The screenshot shows:
 - Visual hierarchy and emphasis
 - Whitespace and breathing room
 - The intended "feel" of the layout
@@ -194,7 +196,7 @@ Positions are percentages of the screenshot dimensions, NOT pixel values. `x: 50
 
 ### 3. Ignoring visual grouping
 
-Elements that are visually grouped in the screenshot should be grouped in your component's DOM structure, even if the YAML lists them as separate placements.
+Elements that are visually grouped in the screenshot should be grouped in your component's DOM structure, even if the JSON lists them as separate placements.
 
 ### 4. Making inferred data editable
 
@@ -214,7 +216,7 @@ Percentage coordinates describe WHERE data appears on the wireframe, not HOW to 
 
 ```
 Screenshot        → Visual structure, hierarchy, grouping, spacing
-Sub-canvas YAML   → What data goes where (percentage coordinates)
+Sub-canvas JSON   → What data goes where (percentage coordinates)
 Main spec (opt)   → Types, constraints, captured vs inferred, data flow
 
 position.x: 0-100  → left to right (percentage)

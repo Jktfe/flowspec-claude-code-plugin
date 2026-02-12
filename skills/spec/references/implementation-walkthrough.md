@@ -1,106 +1,92 @@
 # Implementation Walkthrough
 
-A worked example showing how to go from a FlowSpec YAML export to a fully implemented feature.
+A worked example showing how to go from a FlowSpec JSON export to a fully implemented feature.
 
 ## The Spec
 
 A simplified task management feature with 3 DataPoints, 1 Component, 1 Transform, and 3 edges:
 
-```yaml
-version: "1.0.0"
-metadata:
-  projectName: Task Manager
-  exportedAt: "2026-01-15T10:00:00.000Z"
-  nodeCount: 5
-  edgeCount: 5
-
-dataPoints:
-  - id: dp-task-title
-    label: Task Title
-    type: string
-    source: captured
-    sourceDefinition: User enters task title in creation form
-    constraints:
-      - required
-      - max 200
-    locations:
-      - component: comp-task-form
-        role: input
-      - component: comp-task-list
-        role: output
-
-  - id: dp-task-priority
-    label: Task Priority
-    type: string
-    source: captured
-    sourceDefinition: User selects priority level from dropdown
-    constraints:
-      - required
-      - enum low/medium/high
-    locations:
-      - component: comp-task-form
-        role: input
-      - component: comp-task-list
-        role: output
-
-  - id: dp-task-count
-    label: Task Count
-    type: number
-    source: inferred
-    sourceDefinition: "Count of tasks grouped by priority"
-    constraints:
-      - min 0
-    locations:
-      - component: comp-task-list
-        role: output
-
-components:
-  - id: comp-task-form
-    label: Create Task
-    displays: []
-    captures:
-      - dp-task-title
-      - dp-task-priority
-
-  - id: comp-task-list
-    label: Task List
-    displays:
-      - dp-task-title
-      - dp-task-priority
-      - dp-task-count
-    captures: []
-
-transforms:
-  - id: tx-count-by-priority
-    type: formula
-    description: Counts tasks grouped by priority level
-    inputs:
-      - dp-task-title
-      - dp-task-priority
-    outputs:
-      - dp-task-count
-    logic:
-      type: formula
-      content: "count_by_priority = GROUP_BY(tasks, priority).COUNT()"
-
-dataFlow:
-  - from: comp-task-form
-    to: dp-task-title
-    edgeType: flows-to
-    label: form submit
-  - from: comp-task-form
-    to: dp-task-priority
-    edgeType: flows-to
-    label: form submit
-  - from: dp-task-priority
-    to: tx-count-by-priority
-    edgeType: transforms
-  - from: tx-count-by-priority
-    to: dp-task-count
-    edgeType: derives-from
-  - from: dp-task-count
-    to: comp-task-list
-    edgeType: flows-to
+```json
+{
+  "version": "1.0.0",
+  "metadata": {
+    "projectName": "Task Manager",
+    "exportedAt": "2026-01-15T10:00:00.000Z",
+    "nodeCount": 5,
+    "edgeCount": 5
+  },
+  "dataPoints": [
+    {
+      "id": "dp-task-title",
+      "label": "Task Title",
+      "type": "string",
+      "source": "captured",
+      "sourceDefinition": "User enters task title in creation form",
+      "constraints": ["required", "max 200"],
+      "locations": [
+        { "component": "comp-task-form", "role": "input" },
+        { "component": "comp-task-list", "role": "output" }
+      ]
+    },
+    {
+      "id": "dp-task-priority",
+      "label": "Task Priority",
+      "type": "string",
+      "source": "captured",
+      "sourceDefinition": "User selects priority level from dropdown",
+      "constraints": ["required", "enum low/medium/high"],
+      "locations": [
+        { "component": "comp-task-form", "role": "input" },
+        { "component": "comp-task-list", "role": "output" }
+      ]
+    },
+    {
+      "id": "dp-task-count",
+      "label": "Task Count",
+      "type": "number",
+      "source": "inferred",
+      "sourceDefinition": "Count of tasks grouped by priority",
+      "constraints": ["min 0"],
+      "locations": [
+        { "component": "comp-task-list", "role": "output" }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "comp-task-form",
+      "label": "Create Task",
+      "displays": [],
+      "captures": ["dp-task-title", "dp-task-priority"]
+    },
+    {
+      "id": "comp-task-list",
+      "label": "Task List",
+      "displays": ["dp-task-title", "dp-task-priority", "dp-task-count"],
+      "captures": []
+    }
+  ],
+  "transforms": [
+    {
+      "id": "tx-count-by-priority",
+      "type": "formula",
+      "description": "Counts tasks grouped by priority level",
+      "inputs": ["dp-task-title", "dp-task-priority"],
+      "outputs": ["dp-task-count"],
+      "logic": {
+        "type": "formula",
+        "content": "count_by_priority = GROUP_BY(tasks, priority).COUNT()"
+      }
+    }
+  ],
+  "dataFlow": [
+    { "from": "comp-task-form", "to": "dp-task-title", "edgeType": "flows-to", "label": "form submit" },
+    { "from": "comp-task-form", "to": "dp-task-priority", "edgeType": "flows-to", "label": "form submit" },
+    { "from": "dp-task-priority", "to": "tx-count-by-priority", "edgeType": "transforms" },
+    { "from": "tx-count-by-priority", "to": "dp-task-count", "edgeType": "derives-from" },
+    { "from": "dp-task-count", "to": "comp-task-list", "edgeType": "flows-to" }
+  ]
+}
 ```
 
 ---
@@ -338,4 +324,4 @@ Wire it all together in the page:
 | `transforms` edge | Function input wiring |
 | `derives-from` edge | Function output wiring |
 
-The spec didn't dictate styling, layout, error handling, or UX — those are implementation decisions. But every type, field, validation rule, and data flow came directly from the YAML.
+The spec didn't dictate styling, layout, error handling, or UX — those are implementation decisions. But every type, field, validation rule, and data flow came directly from the JSON.

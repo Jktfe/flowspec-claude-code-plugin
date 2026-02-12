@@ -1,4 +1,4 @@
-# FlowSpec Sub-Canvas YAML Schema
+# FlowSpec Sub-Canvas JSON Schema
 
 ## Version
 
@@ -6,25 +6,27 @@ Current schema version: `1.0.0`
 
 ## Overview
 
-A sub-canvas YAML describes data element placements overlaid on a wireframe screenshot. It is exported from FlowSpec alongside the screenshot image and is used to map data elements to their visual positions on screen.
+A sub-canvas JSON describes data element placements overlaid on a wireframe screenshot. It is exported from FlowSpec alongside the screenshot image and is used to map data elements to their visual positions on screen.
 
-The `kind: 'sub-canvas'` field distinguishes this from a main FlowSpec YAML export.
+The `kind: 'sub-canvas'` field distinguishes this from a main FlowSpec JSON export.
 
 ## Top-Level Structure
 
-```yaml
-version: "1.0.0"
-kind: sub-canvas
-metadata:
-  name: string                # Name of the sub-canvas (e.g., "Dashboard Header")
-  screenshotFilename: string  # Filename of the accompanying screenshot image
-  screenshotWidth: number     # Original screenshot width in pixels
-  screenshotHeight: number    # Original screenshot height in pixels
-  placementCount: number      # Number of data elements placed on this screenshot
-  exportedAt: string          # ISO 8601 timestamp
-  projectName: string         # Parent project name
-
-placements: Placement[]       # Data elements positioned on the screenshot
+```json
+{
+  "version": "1.0.0",
+  "kind": "sub-canvas",
+  "metadata": {
+    "name": "string",               // Name of the sub-canvas (e.g., "Dashboard Header")
+    "screenshotFilename": "string",  // Filename of the accompanying screenshot image
+    "screenshotWidth": "number",     // Original screenshot width in pixels
+    "screenshotHeight": "number",    // Original screenshot height in pixels
+    "placementCount": "number",      // Number of data elements placed on this screenshot
+    "exportedAt": "string",          // ISO 8601 timestamp
+    "projectName": "string"          // Parent project name
+  },
+  "placements": "Placement[]"       // Data elements positioned on the screenshot
+}
 ```
 
 ---
@@ -68,7 +70,7 @@ A single data element positioned on the wireframe screenshot.
 
 ## Cross-Referencing the Main Spec
 
-Use `sourceNodeId` to look up full details in the main FlowSpec YAML:
+Use `sourceNodeId` to look up full details in the main FlowSpec JSON:
 
 - For `datapoint` nodes: find the matching entry in `dataPoints[]` to get `type`, `source`, `constraints`, etc.
 - For `component` nodes: find the matching entry in `components[]` to get `displays`, `captures`
@@ -80,53 +82,52 @@ If the main spec is not available, `sourceNodeLabel` and `sourceNodeType` provid
 
 ## Complete Example
 
-```yaml
-version: "1.0.0"
-kind: sub-canvas
-metadata:
-  name: User Profile Header
-  screenshotFilename: user-profile-header.png
-  screenshotWidth: 1440
-  screenshotHeight: 900
-  placementCount: 5
-  exportedAt: "2026-01-20T14:30:00.000Z"
-  projectName: My App
-
-placements:
-  - sourceNodeId: dp-user-avatar
-    sourceNodeLabel: User Avatar
-    sourceNodeType: datapoint
-    position:
-      x: 5.2
-      y: 8.1
-
-  - sourceNodeId: dp-user-name
-    sourceNodeLabel: User Name
-    sourceNodeType: datapoint
-    position:
-      x: 15.0
-      y: 6.3
-
-  - sourceNodeId: dp-user-email
-    sourceNodeLabel: User Email
-    sourceNodeType: datapoint
-    position:
-      x: 15.0
-      y: 12.5
-
-  - sourceNodeId: dp-account-age
-    sourceNodeLabel: Account Age
-    sourceNodeType: datapoint
-    position:
-      x: 85.0
-      y: 8.0
-
-  - sourceNodeId: tx-calc-account-age
-    sourceNodeLabel: Calculate Account Age
-    sourceNodeType: transform
-    position:
-      x: 85.0
-      y: 15.0
+```json
+{
+  "version": "1.0.0",
+  "kind": "sub-canvas",
+  "metadata": {
+    "name": "User Profile Header",
+    "screenshotFilename": "user-profile-header.png",
+    "screenshotWidth": 1440,
+    "screenshotHeight": 900,
+    "placementCount": 5,
+    "exportedAt": "2026-01-20T14:30:00.000Z",
+    "projectName": "My App"
+  },
+  "placements": [
+    {
+      "sourceNodeId": "dp-user-avatar",
+      "sourceNodeLabel": "User Avatar",
+      "sourceNodeType": "datapoint",
+      "position": { "x": 5.2, "y": 8.1 }
+    },
+    {
+      "sourceNodeId": "dp-user-name",
+      "sourceNodeLabel": "User Name",
+      "sourceNodeType": "datapoint",
+      "position": { "x": 15.0, "y": 6.3 }
+    },
+    {
+      "sourceNodeId": "dp-user-email",
+      "sourceNodeLabel": "User Email",
+      "sourceNodeType": "datapoint",
+      "position": { "x": 15.0, "y": 12.5 }
+    },
+    {
+      "sourceNodeId": "dp-account-age",
+      "sourceNodeLabel": "Account Age",
+      "sourceNodeType": "datapoint",
+      "position": { "x": 85.0, "y": 8.0 }
+    },
+    {
+      "sourceNodeId": "tx-calc-account-age",
+      "sourceNodeLabel": "Calculate Account Age",
+      "sourceNodeType": "transform",
+      "position": { "x": 85.0, "y": 15.0 }
+    }
+  ]
+}
 ```
 
 ### Reading This Example

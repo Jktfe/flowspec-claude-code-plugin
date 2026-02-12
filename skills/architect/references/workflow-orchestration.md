@@ -12,7 +12,7 @@ type WorkflowState =
   | 'ROUTE'     // Determine use case
   | 'GATHER'    // Collect inputs
   | 'INTERVIEW' // User clarification loops
-  | 'GENERATE'  // Build YAML
+  | 'GENERATE'  // Build JSON
   | 'VALIDATE'  // Quality checks
   | 'REFINE'    // Layout & regions
   | 'FINALIZE'  // Export & tech spec
@@ -26,9 +26,9 @@ interface WorkflowContext {
   projectId?: string;
   projectName?: string;
   screenIds?: string[];
-  miniYamls?: string[];
+  miniSpecs?: string[];
   currentScreenIndex?: number;
-  fullYaml?: string;
+  fullSpec?: string;
   analysisResults?: AnalysisResult;
   errors?: string[];
 }
@@ -44,7 +44,7 @@ stateDiagram-v2
     GATHER --> INTERVIEW: Inputs collected
     INTERVIEW --> INTERVIEW: Screen incomplete (refine)
     INTERVIEW --> GENERATE: All screens confirmed
-    GENERATE --> VALIDATE: YAML assembled
+    GENERATE --> VALIDATE: JSON assembled
     VALIDATE --> REFINE: Quality passed
     VALIDATE --> VALIDATE: Issues fixed, retry
     REFINE --> FINALIZE: Layout complete
@@ -112,7 +112,7 @@ TaskCreate({
     projectId: projectId,
     projectName: projectName,
     screenIds: JSON.stringify(screenIds),
-    miniYamls: JSON.stringify(miniYamls),
+    miniSpecs: JSON.stringify(miniSpecs),
     currentScreenIndex: currentScreenIndex
   }
 });
@@ -143,7 +143,7 @@ function saveState(taskId: string, context: WorkflowContext) {
     description: `State: ${context.state}, Project: ${context.projectName}`,
     metadata: {
       ...context,
-      miniYamls: JSON.stringify(context.miniYamls),
+      miniSpecs: JSON.stringify(context.miniSpecs),
       screenIds: JSON.stringify(context.screenIds)
     }
   });
@@ -160,7 +160,7 @@ function loadState(taskId: string): WorkflowContext {
     projectId: task.metadata.projectId,
     projectName: task.metadata.projectName,
     screenIds: JSON.parse(task.metadata.screenIds || '[]'),
-    miniYamls: JSON.parse(task.metadata.miniYamls || '[]'),
+    miniSpecs: JSON.parse(task.metadata.miniSpecs || '[]'),
     currentScreenIndex: task.metadata.currentScreenIndex || 0
   };
 }
@@ -204,12 +204,12 @@ function resumeWorkflow(context: WorkflowContext) {
       return continueInterview(context);
 
     case 'GENERATE':
-      // Regenerate from saved miniYamls
-      return generateYaml(context.miniYamls);
+      // Regenerate from saved miniSpecs
+      return generateSpec(context.miniSpecs);
 
     case 'VALIDATE':
       // Re-run analysis
-      return validateYaml(context);
+      return validateSpec(context);
 
     case 'REFINE':
       // Continue layout/regions
@@ -282,16 +282,16 @@ IF user provides state:
 
 Save intermediate results even on failure:
 ```typescript
-// Always save miniYamls as they're created
-function saveMiniYaml(context: WorkflowContext, screenName: string, yaml: string) {
-  context.miniYamls = context.miniYamls || [];
-  context.miniYamls.push(yaml);
+// Always save miniSpecs as they're created
+function saveMiniSpec(context: WorkflowContext, screenName: string, spec: string) {
+  context.miniSpecs = context.miniSpecs || [];
+  context.miniSpecs.push(spec);
 
   // Persist immediately (don't wait for full workflow completion)
   saveState(context.taskId!, context);
 
   // Also save to file for manual recovery
-  const filename = `${context.projectName}_${screenName}_mini.yaml`;
+  const filename = `${context.projectName}_${screenName}_mini.json`;
   // Write to temp directory
 }
 ```
@@ -371,9 +371,9 @@ async function applyAutoFixes(
       await rule.autoFix(projectId, analysis);
     }
 
-    // Re-import YAML to refresh canvas
-    const yaml = await flowspec_get_yaml(projectId);
-    await flowspec_import_yaml(projectId, yaml, { merge: false });
+    // Re-import spec to refresh canvas
+    const spec = await flowspec_get_yaml(projectId);
+    await flowspec_import_yaml(projectId, spec, { merge: false });
 
     // Re-validate
     const newAnalysis = await flowspec_analyse_project(projectId);
@@ -381,14 +381,14 @@ async function applyAutoFixes(
 }
 ```
 
-## Progressive YAML Assembly
+## Progressive JSON Assembly
 
-### Mini-YAML Merging Algorithm
+### Mini-Spec Merging Algorithm
 
 ```typescript
-interface MiniYaml {
+interface MiniSpec {
   screenName: string;
-  yaml: string;
+  spec: string;
   parsed: {
     dataPoints: DataPoint[];
     components: Component[];
@@ -396,7 +396,7 @@ interface MiniYaml {
   };
 }
 
-function mergeMiniYamls(miniYamls: MiniYaml[]): string {
+function mergeMiniSpecs(miniSpecs: MiniSpec[]): string {
   const merged = {
     version: '1.2.0',
     dataPoints: [] as DataPoint[],
@@ -410,7 +410,7 @@ function mergeMiniYamls(miniYamls: MiniYaml[]): string {
   const nodeIdMap = new Map<string, string>(); // original ID → merged ID
 
   // 1. Merge DataPoints (deduplicate by label + type)
-  for (const mini of miniYamls) {
+  for (const mini of miniSpecs) {
     for (const dp of mini.parsed.dataPoints) {
       const existing = merged.dataPoints.find(
         d => d.label === dp.label && d.type === dp.type
@@ -431,7 +431,7 @@ function mergeMiniYamls(miniYamls: MiniYaml[]): string {
   }
 
   // 2. Merge Components (no deduplication, each screen = unique component)
-  for (const mini of miniYamls) {
+  for (const mini of miniSpecs) {
     for (const comp of mini.parsed.components) {
       // Update references using nodeIdMap
       comp.displays = comp.displays.map(id => nodeIdMap.get(id) || id);
@@ -441,7 +441,7 @@ function mergeMiniYamls(miniYamls: MiniYaml[]): string {
   }
 
   // 3. Merge Transforms (deduplicate by label + logic)
-  for (const mini of miniYamls) {
+  for (const mini of miniSpecs) {
     for (const tf of mini.parsed.transforms) {
       const existing = merged.transforms.find(
         t => t.label === tf.label && t.logic.content === tf.logic.content
@@ -459,7 +459,7 @@ function mergeMiniYamls(miniYamls: MiniYaml[]): string {
   merged.dataFlow = generateCrossScreenEdges(merged);
 
   // 5. Add screens metadata
-  merged.screens = miniYamls.map(mini => ({
+  merged.screens = miniSpecs.map(mini => ({
     id: mini.screenId,
     name: mini.screenName,
     imageUrl: mini.imageUrl,
@@ -468,14 +468,14 @@ function mergeMiniYamls(miniYamls: MiniYaml[]): string {
     regions: [] // Added in REFINE phase
   }));
 
-  return YAML.stringify(merged);
+  return JSON.stringify(merged, null, 2);
 }
 ```
 
 ### Cross-Screen Edge Generation
 
 ```typescript
-function generateCrossScreenEdges(spec: YamlSpec): Edge[] {
+function generateCrossScreenEdges(spec: FlowSpec): Edge[] {
   const edges: Edge[] = [];
 
   // Component → DataPoint (displays)
@@ -537,7 +537,7 @@ async function validateCheckpoint(context: WorkflowContext): Promise<boolean> {
     checkMCPConnection(),
     checkProjectExists(context.projectId),
     checkScreensCreated(context.screenIds),
-    checkYamlValid(context.fullYaml)
+    checkSpecValid(context.fullSpec)
   ];
 
   const results = await Promise.allSettled(checks);
@@ -613,7 +613,7 @@ describe('UC1: Wireframe -> Dataflow', () => {
     expect(workflow.state).toBe('GENERATE');
 
     // GENERATE
-    await workflow.generateYaml();
+    await workflow.generateSpec();
     expect(workflow.state).toBe('VALIDATE');
 
     // VALIDATE
@@ -627,7 +627,7 @@ describe('UC1: Wireframe -> Dataflow', () => {
     // FINALIZE
     const result = await workflow.finalize();
     expect(workflow.state).toBe('DONE');
-    expect(result.yamlPath).toBeDefined();
+    expect(result.jsonPath).toBeDefined();
     expect(result.techSpecPath).toBeDefined();
   });
 });

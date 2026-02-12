@@ -1,4 +1,4 @@
-# FlowSpec YAML Schema Reference
+# FlowSpec JSON Schema Reference
 
 ## Version
 
@@ -6,20 +6,22 @@ Current schema version: `1.2.0`
 
 ## Top-Level Structure
 
-```yaml
-version: "1.2.0"
-metadata:
-  projectName: string        # Name of the project
-  exportedAt: string         # ISO 8601 timestamp
-  nodeCount: number          # Total DataPoints + Components + Transforms + Tables
-  edgeCount: number          # Total edges in dataFlow
-
-dataPoints: DataPoint[]      # All data elements
-components: Component[]      # All UI components/pages
-transforms: Transform[]      # All business logic nodes
-tables: Table[]              # Data persistence sources (v1.2.0+)
-dataFlow: Edge[]             # All connections between nodes
-screens: Screen[]            # Annotated wireframe screens with regions (v1.1.0+)
+```json
+{
+  "version": "1.2.0",
+  "metadata": {
+    "projectName": "string",        // Name of the project
+    "exportedAt": "string",         // ISO 8601 timestamp
+    "nodeCount": "number",          // Total DataPoints + Components + Transforms + Tables
+    "edgeCount": "number"           // Total edges in dataFlow
+  },
+  "dataPoints": "DataPoint[]",      // All data elements
+  "components": "Component[]",      // All UI components/pages
+  "transforms": "Transform[]",      // All business logic nodes
+  "tables": "Table[]",              // Data persistence sources (v1.2.0+)
+  "dataFlow": "Edge[]",             // All connections between nodes
+  "screens": "Screen[]"             // Annotated wireframe screens with regions (v1.1.0+)
+}
 ```
 
 ---
@@ -208,25 +210,38 @@ A connection between two nodes.
 
 An annotated wireframe or screenshot with regions mapping UI areas to data elements.
 
-```yaml
-screens:
-  - id: string                    # Unique screen ID
-    name: string                  # Human-readable screen name
-    imageFilename: string         # Optional: attached image filename
-    regions:
-      - id: string               # Unique region ID
-        label: string            # Optional: region label (e.g. "Login Form")
-        position:
-          x: number              # Top-left X as percentage (0-100)
-          y: number              # Top-left Y as percentage (0-100)
-        size:
-          width: number          # Width as percentage (0-100)
-          height: number         # Height as percentage (0-100)
-        elements:
-          - nodeId: string       # Reference to a DataPoint/Component/Transform ID
-            nodeLabel: string    # Label of the referenced node
-            nodeType: string     # datapoint | component | transform | table
-        componentNodeId: string  # Optional: promoted Component node ID
+```json
+{
+  "screens": [
+    {
+      "id": "string",                     // Unique screen ID
+      "name": "string",                   // Human-readable screen name
+      "imageFilename": "string",          // Optional: attached image filename
+      "regions": [
+        {
+          "id": "string",                 // Unique region ID
+          "label": "string",             // Optional: region label (e.g. "Login Form")
+          "position": {
+            "x": "number",              // Top-left X as percentage (0-100)
+            "y": "number"               // Top-left Y as percentage (0-100)
+          },
+          "size": {
+            "width": "number",           // Width as percentage (0-100)
+            "height": "number"           // Height as percentage (0-100)
+          },
+          "elements": [
+            {
+              "nodeId": "string",        // Reference to a DataPoint/Component/Transform ID
+              "nodeLabel": "string",     // Label of the referenced node
+              "nodeType": "string"       // datapoint | component | transform | table
+            }
+          ],
+          "componentNodeId": "string"    // Optional: promoted Component node ID
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ### Notes
@@ -241,120 +256,106 @@ screens:
 
 ## Complete Example
 
-```yaml
-version: "1.2.0"
-metadata:
-  projectName: Example App
-  exportedAt: "2026-02-08T12:00:00.000Z"
-  nodeCount: 7
-  edgeCount: 6
-
-dataPoints:
-  - id: dp-user-email
-    label: User Email
-    type: string
-    source: captured
-    sourceDefinition: User enters email in registration form
-    constraints:
-      - required
-      - email format
-    locations:
-      - component: comp-register
-        role: input
-      - component: comp-profile
-        role: output
-
-  - id: dp-account-age
-    label: Account Age
-    type: number
-    source: inferred
-    sourceDefinition: Days since registration date
-    constraints:
-      - min 0
-    locations:
-      - component: comp-profile
-        role: output
-
-components:
-  - id: comp-register
-    label: Registration Form
-    displays: []
-    captures:
-      - dp-user-email
-
-  - id: comp-profile
-    label: User Profile
-    displays:
-      - dp-user-email
-      - dp-account-age
-    captures: []
-
-transforms:
-  - id: tx-calc-account-age
-    type: formula
-    description: Calculates days since user registered
-    inputs:
-      - dp-user-email
-    outputs:
-      - dp-account-age
-    logic:
-      type: formula
-      content: "account_age = (today - registration_date).days"
-
-tables:
-  - id: tbl-users
-    label: Users Table
-    sourceType: database
-    columns:
-      - name: email
-        type: string
-      - name: created_at
-        type: string
-      - name: name
-        type: string
-    endpoint: ""
-
-dataFlow:
-  - from: comp-register
-    to: dp-user-email
-    edgeType: flows-to
-    label: form submit
-  - from: dp-user-email
-    to: tx-calc-account-age
-    edgeType: transforms
-  - from: tx-calc-account-age
-    to: dp-account-age
-    edgeType: derives-from
-  - from: dp-account-age
-    to: comp-profile
-    edgeType: flows-to
-  - from: tbl-users
-    to: dp-user-email
-    edgeType: contains
-    label: users.email column
-  - from: dp-user-email
-    to: comp-profile
-    edgeType: flows-to
-    label: display in header
-
-screens:
-  - id: screen-profile
-    name: Profile Page
-    imageFilename: profile-wireframe.png
-    regions:
-      - id: region-header
-        label: User Header
-        position:
-          x: 5
-          y: 2
-        size:
-          width: 90
-          height: 15
-        elements:
-          - nodeId: dp-user-email
-            nodeLabel: User Email
-            nodeType: datapoint
-          - nodeId: dp-account-age
-            nodeLabel: Account Age
-            nodeType: datapoint
+```json
+{
+  "version": "1.2.0",
+  "metadata": {
+    "projectName": "Example App",
+    "exportedAt": "2026-02-08T12:00:00.000Z",
+    "nodeCount": 7,
+    "edgeCount": 6
+  },
+  "dataPoints": [
+    {
+      "id": "dp-user-email",
+      "label": "User Email",
+      "type": "string",
+      "source": "captured",
+      "sourceDefinition": "User enters email in registration form",
+      "constraints": ["required", "email format"],
+      "locations": [
+        { "component": "comp-register", "role": "input" },
+        { "component": "comp-profile", "role": "output" }
+      ]
+    },
+    {
+      "id": "dp-account-age",
+      "label": "Account Age",
+      "type": "number",
+      "source": "inferred",
+      "sourceDefinition": "Days since registration date",
+      "constraints": ["min 0"],
+      "locations": [
+        { "component": "comp-profile", "role": "output" }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "comp-register",
+      "label": "Registration Form",
+      "displays": [],
+      "captures": ["dp-user-email"]
+    },
+    {
+      "id": "comp-profile",
+      "label": "User Profile",
+      "displays": ["dp-user-email", "dp-account-age"],
+      "captures": []
+    }
+  ],
+  "transforms": [
+    {
+      "id": "tx-calc-account-age",
+      "type": "formula",
+      "description": "Calculates days since user registered",
+      "inputs": ["dp-user-email"],
+      "outputs": ["dp-account-age"],
+      "logic": {
+        "type": "formula",
+        "content": "account_age = (today - registration_date).days"
+      }
+    }
+  ],
+  "tables": [
+    {
+      "id": "tbl-users",
+      "label": "Users Table",
+      "sourceType": "database",
+      "columns": [
+        { "name": "email", "type": "string" },
+        { "name": "created_at", "type": "string" },
+        { "name": "name", "type": "string" }
+      ],
+      "endpoint": ""
+    }
+  ],
+  "dataFlow": [
+    { "from": "comp-register", "to": "dp-user-email", "edgeType": "flows-to", "label": "form submit" },
+    { "from": "dp-user-email", "to": "tx-calc-account-age", "edgeType": "transforms" },
+    { "from": "tx-calc-account-age", "to": "dp-account-age", "edgeType": "derives-from" },
+    { "from": "dp-account-age", "to": "comp-profile", "edgeType": "flows-to" },
+    { "from": "tbl-users", "to": "dp-user-email", "edgeType": "contains", "label": "users.email column" },
+    { "from": "dp-user-email", "to": "comp-profile", "edgeType": "flows-to", "label": "display in header" }
+  ],
+  "screens": [
+    {
+      "id": "screen-profile",
+      "name": "Profile Page",
+      "imageFilename": "profile-wireframe.png",
+      "regions": [
+        {
+          "id": "region-header",
+          "label": "User Header",
+          "position": { "x": 5, "y": 2 },
+          "size": { "width": 90, "height": 15 },
+          "elements": [
+            { "nodeId": "dp-user-email", "nodeLabel": "User Email", "nodeType": "datapoint" },
+            { "nodeId": "dp-account-age", "nodeLabel": "Account Age", "nodeType": "datapoint" }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
