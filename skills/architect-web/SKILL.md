@@ -60,7 +60,7 @@ Use Claude vision to examine wireframe images the user provides:
 Ask about data types, sources, business logic, constraints — same as `architect` UC1 Step 4.
 
 ### Step 3: Build JSON spec
-Assemble the JSON following the [v1.2.0 schema](references/json-schema.md).
+Assemble the JSON following the [v1.2.0 schema](../architect/references/json-schema.md).
 
 ### Step 4: Navigate to flowspec.app
 Ensure we have a flowspec.app tab open (preferably at `/projects` for the dashboard):

@@ -24,6 +24,33 @@ Load a FlowSpec JSON export and use it as a requirements document while building
 /flowspec:spec path/to/flowspec-export.json
 ```
 
+### `flowspec:architect` — MCP-Powered Data Architecture
+
+Create and manage FlowSpec projects directly from Claude Code using the FlowSpec MCP server. Supports three workflows: wireframe-to-dataflow, codebase-to-dataflow, and design-new-screens. Requires the `flowspec-mcp` server configured.
+
+**Use when:**
+- Creating a new FlowSpec project from wireframe images or a codebase
+- Building data architecture with nodes, edges, and screens via MCP
+- Analysing and iterating on an existing FlowSpec project
+
+**Usage:**
+```
+/flowspec:architect [wireframe images | codebase path | 'new project']
+```
+
+### `flowspec:architect-web` — Browser-Based Data Architecture
+
+Same three workflows as `architect`, but uses Chrome browser tools instead of MCP — for users without the desktop app. Generates JSON locally and uses light browser automation to import into the web editor at flowspec.app.
+
+**Use when:**
+- You don't have FlowSpec Desktop or the MCP server configured
+- You want to work with the FlowSpec web app via Chrome automation
+
+**Usage:**
+```
+/flowspec:architect-web [wireframe images | codebase path | 'new project']
+```
+
 ### `flowspec:wireframe` — Screenshot Component Design
 
 Combine a wireframe screenshot with a sub-canvas JSON spec to implement UI components with both visual and data context. Claude sees the screenshot AND knows what data goes where via placement coordinates.
@@ -64,22 +91,6 @@ claude plugin install flowspec@https://github.com/Jktfe/flowspec-claude-code-plu
 Note: Direct GitHub installation may not work due to SSH/authentication issues. Use the marketplace method or local install instead.
 
 ### Local Development
-
-Clone the repo and load it with `--plugin-dir`:
-
-```bash
-git clone https://github.com/Jktfe/flowspec-claude-code-plugin.git
-claude --plugin-dir ./flowspec-claude-code-plugin
-```
-
-This loads the plugin for that session. To always load it, add the flag to your shell alias:
-### From GitHub (recommended)
-
-```bash
-claude plugin install flowspec@https://github.com/Jktfe/flowspec-claude-code-plugin
-```
-
-### Local install
 
 Clone the repo and load it with `--plugin-dir`:
 
