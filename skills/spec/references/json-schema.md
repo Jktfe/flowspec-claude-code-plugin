@@ -188,7 +188,18 @@ A connection between two nodes.
 | `derives-from` | Target is computed from source | Transform -> inferred DataPoint |
 | `transforms` | Data passes through a transform | DataPoint -> Transform |
 | `validates` | Transform validates target data | validation Transform -> DataPoint |
-| `contains` | Table contains a DataPoint | Table -> DataPoint |
+| `contains` | Screen/Table membership | Screen -> captured DP, Element -> Screen, Table -> DataPoint |
+
+### Data Flow Direction Rules (CRITICAL — arrows always represent data flow)
+
+| DataPoint Source | Edge Direction | Meaning |
+|-----------------|----------------|---------|
+| **Captured** | Screen/Component → DataPoint | UI captures user input, data flows to DP |
+| **Retrieved** | Table/Transform/Component → DataPoint | Data source feeds the DP |
+| **Inferred** | Transform → DataPoint | Computed output flows to DP |
+| **Display** | DataPoint → Component/Screen | Data flows to UI for rendering |
+
+**Contains edge direction:** Captured DPs: Screen → DP. All other elements: Element → Screen (data flows to screen for display).
 
 ### Connection Rules
 
@@ -196,11 +207,13 @@ A connection between two nodes.
 |-----------------|---------|-------|
 | DataPoint -> DataPoint | Yes | Must have compatible types |
 | DataPoint -> Component | Yes | Data flows to UI |
+| DataPoint -> Screen | Yes | Non-captured data flows to screen for display |
 | DataPoint -> Transform | Yes | Data inputs to logic |
 | Transform -> DataPoint | Yes | Computed outputs |
 | Transform -> Component | Yes | Direct to display |
 | Component -> DataPoint | Yes | Only if target is `captured` |
-| Table -> DataPoint | Yes | `contains` edge type |
+| Screen -> DataPoint | Yes | Only if target is `captured` |
+| Table -> DataPoint | Yes | `contains` edge type (structural) |
 | Self-connection | No | |
 | Duplicate connection | No | Same source + target |
 
