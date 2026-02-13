@@ -372,8 +372,8 @@ async function applyAutoFixes(
     }
 
     // Re-import spec to refresh canvas
-    const spec = await flowspec_get_yaml(projectId);
-    await flowspec_import_yaml(projectId, spec, { merge: false });
+    const spec = await flowspec_get_json(projectId);
+    await flowspec_import_json(projectId, spec, { merge: false });
 
     // Re-validate
     const newAnalysis = await flowspec_analyse_project(projectId);

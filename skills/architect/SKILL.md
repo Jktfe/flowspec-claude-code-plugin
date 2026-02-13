@@ -290,9 +290,9 @@ Include screen IDs from Phase 3 (regions added in REFINE):
 
 **Step 6.1:** Import spec with auto-layout
 ```
-flowspec_import_yaml(
+flowspec_import_json(
   projectId,
-  yaml: fullSpec,
+  json: fullSpec,
   autoLayout: true,
   layoutDirection: "TB"
 )
@@ -388,7 +388,7 @@ IF user selects direction:
 
 **Step 8.1:** Export final JSON
 ```
-spec = flowspec_get_yaml(projectId)
+spec = flowspec_get_json(projectId)
 ```
 
 Save to file: `{projectName}_flowspec.json`
@@ -672,7 +672,7 @@ Follow GENERATE → VALIDATE → REFINE → FINALIZE phases.
 **Merge mode in GENERATE (UC3-specific):**
 ```
 IF extending existing project:
-  flowspec_import_yaml(projectId, yaml: miniSpec, merge: true)
+  flowspec_import_json(projectId, json: miniSpec, merge: true)
   # Merges new nodes with existing, preserves structure
 ```
 

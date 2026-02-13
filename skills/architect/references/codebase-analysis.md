@@ -85,7 +85,7 @@ Identify the framework to know where to look for data:
 Before analysing the codebase, check if a FlowSpec project already exists:
 
 1. Call `flowspec_list_projects` to see all existing projects
-2. If a project exists for this codebase, call `flowspec_get_yaml` with its `projectId` to retrieve it
+2. If a project exists for this codebase, call `flowspec_get_json` with its `projectId` to retrieve it
 3. Use the existing spec as a **baseline** — update rather than recreate from scratch
 4. Call `flowspec_search_nodes` with key terms to find matches in other projects
 

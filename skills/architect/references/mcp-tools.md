@@ -18,7 +18,7 @@ List all FlowSpec projects with names and dates.
 
 ---
 
-### flowspec_get_yaml
+### flowspec_get_json
 
 Get the full JSON spec for a FlowSpec project.
 
@@ -237,14 +237,14 @@ Run quality analysis on a project.
 
 ## Bulk / Import Tools
 
-### flowspec_import_yaml
+### flowspec_import_json
 
 Import a spec into a project.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `projectId` | string | Yes | UUID of the target project |
-| `yaml` | string | Yes | JSON spec string |
+| `json` | string | Yes | JSON spec string |
 | `autoLayout` | boolean | No | Run dagre layout after import (default: `true`) |
 | `layoutDirection` | enum | No | `TB` (default), `BT`, `LR`, `RL` |
 | `merge` | boolean | No | `true` = add to existing, `false` = replace (default: `false`) |
@@ -254,7 +254,7 @@ Import a spec into a project.
 **Usage patterns:**
 - Full rewrite: `merge: false` (default) — replaces entire canvas
 - Incremental add: `merge: true` — adds new nodes/edges to existing canvas
-- Round-trip edit: `get_yaml` -> modify -> `import_yaml(merge: false)`
+- Round-trip edit: `get_json` -> modify -> `import_json(merge: false)`
 
 ---
 
