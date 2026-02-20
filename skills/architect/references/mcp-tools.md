@@ -181,8 +181,11 @@ Connect two nodes with an edge.
 | `projectId` | string | Yes | UUID of the project |
 | `source` | string | Yes | Source node ID |
 | `target` | string | Yes | Target node ID |
-| `type` | enum | No | `flows-to` (default), `derives-from`, `transforms`, `validates`, `contains` |
+| `sourceHandle` | enum/null | No | `source-left`, `source-top`, `source-right`, `source-bottom`, or `null` (auto) |
+| `targetHandle` | enum/null | No | `target-left`, `target-top`, `target-right`, `target-bottom`, or `null` (auto) |
 | `data` | object | No | Additional edge data |
+
+> **Note:** All edges are created with type `flows-to`. Edge type is no longer configurable.
 
 **Returns:** Created edge with UUID.
 
@@ -190,13 +193,12 @@ Connect two nodes with an edge.
 
 ### flowspec_update_edge
 
-Update an edge's type, label, or connection handles.
+Update an edge's label or connection handles.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `projectId` | string | Yes | UUID of the project |
 | `edgeId` | string | Yes | UUID of the edge |
-| `type` | enum | No | `flows-to`, `derives-from`, `transforms`, `validates`, `contains` |
 | `label` | string | No | Edge label text |
 | `sourceHandle` | enum/null | No | `source-left`, `source-top`, `source-right`, `source-bottom`, or `null` (auto) |
 | `targetHandle` | enum/null | No | `target-left`, `target-top`, `target-right`, `target-bottom`, or `null` (auto) |

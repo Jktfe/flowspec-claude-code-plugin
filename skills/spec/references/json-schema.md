@@ -177,18 +177,18 @@ A connection between two nodes.
 |-------|------|----------|-------------|
 | `from` | `string` | Yes | Source node ID (any node type) |
 | `to` | `string` | Yes | Target node ID (any node type) |
-| `edgeType` | `EdgeType` | Yes | One of: `flows-to`, `derives-from`, `transforms`, `validates`, `contains` |
+| `edgeType` | `EdgeType` | Yes | Always `flows-to` |
 | `label` | `string` | No | Describes the connection |
+| `sourceHandle` | `string \| null` | No | Source connection handle (`source-left`, `source-top`, `source-right`, `source-bottom`, or null for auto-route) |
+| `targetHandle` | `string \| null` | No | Target connection handle (`target-left`, `target-top`, `target-right`, `target-bottom`, or null for auto-route) |
 
 ### EdgeType Values
 
-| Type | Meaning | Typical Connection |
-|------|---------|-------------------|
-| `flows-to` | Data moves from source to target | DataPoint -> Component, Component -> DataPoint |
-| `derives-from` | Target is computed from source | Transform -> inferred DataPoint |
-| `transforms` | Data passes through a transform | DataPoint -> Transform |
-| `validates` | Transform validates target data | validation Transform -> DataPoint |
-| `contains` | Screen/Table membership | Screen -> captured DP, Element -> Screen, Table -> DataPoint |
+All edges use the `flows-to` type. The semantic meaning of a connection is determined by the Transform node's `type` property (formula, validation, workflow) and the direction of the edge, not by the edge type itself.
+
+| Type | Meaning |
+|------|---------|
+| `flows-to` | Data moves from source to target (the only edge type) |
 
 ### Data Flow Direction Rules (CRITICAL — arrows always represent data flow)
 
@@ -213,7 +213,7 @@ A connection between two nodes.
 | Transform -> Component | Yes | Direct to display |
 | Component -> DataPoint | Yes | Only if target is `captured` |
 | Screen -> DataPoint | Yes | Only if target is `captured` |
-| Table -> DataPoint | Yes | `contains` edge type (structural) |
+| Table -> DataPoint | Yes | Structural data source relationship |
 | Self-connection | No | |
 | Duplicate connection | No | Same source + target |
 

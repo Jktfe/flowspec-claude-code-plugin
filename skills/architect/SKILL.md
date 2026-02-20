@@ -12,9 +12,18 @@ argument_hint: "[wireframe images | codebase path | 'new project']"
 
 Creates FlowSpec projects — the reverse direction of `spec`/`wireframe`. This skill produces FlowSpec projects from wireframes, codebases, or design sessions using a **state-based orchestration workflow** with quality gates and interview loops.
 
-**Core pattern:** INIT → ROUTE → GATHER → INTERVIEW → GENERATE → VALIDATE → REFINE → FINALIZE
+**Core pattern:** INIT → ROUTE → GATHER → INTERVIEW → GENERATE → VALIDATE → REFINE → FINALIZE → **CONFIRM**
 
 **Requires:** `flowspec_*` MCP tools (FlowSpec desktop app or standalone MCP server).
+
+<HARD-GATE>
+Do NOT invoke `/spec`, `/flowspec:spec`, or any implementation skill, write any implementation code, scaffold any project, or take any implementation action until:
+1. The FlowSpec spec has been exported and presented to the user
+2. The user has explicitly confirmed the spec is complete and correct
+3. You have received unambiguous approval (e.g. "yes", "approved", "looks good", "go ahead")
+
+This gate applies regardless of how simple the project seems. A tech spec markdown document is NOT confirmation — the user must review the actual FlowSpec project and approve it.
+</HARD-GATE>
 
 **Key Features:**
 - Screen-by-screen interview loops with user confirmation
@@ -43,6 +52,8 @@ VALIDATE (enhanced analysis, quality checks)
 REFINE (layout, regions, smart positioning)
   ↓
 FINALIZE (export JSON, generate tech spec)
+  ↓
+CONFIRM (user reviews & approves spec — HARD GATE before implementation)
 ```
 
 **State Persistence:** Use Task system (TaskCreate/TaskUpdate) to track state and enable resume.
@@ -238,10 +249,10 @@ ASK: "Screen '${screenName}' complete? [yes / no / refine]"
 - Merge constraints and references
 
 **Step 5.2:** Add cross-screen dataFlow edges
-Trace data paths between screens:
+Trace data paths between screens — all edges use `flows-to` type:
 - Component A captures → Component B displays (flows-to)
-- Transform produces → Component displays (derives-from)
-- Validation checks → DataPoint (validates)
+- Transform produces → Component displays (flows-to)
+- Validation checks → DataPoint (flows-to)
 
 **Step 5.3:** Add tables (if applicable)
 If database tables or API endpoints were mentioned:
@@ -448,7 +459,7 @@ Generated: {timestamp}
 
 **Step 8.3:** Completion summary
 ```
-✅ FlowSpec project created successfully!
+✅ FlowSpec project created — awaiting your review.
 
 - Project: ${projectName}
 - Screens: ${screenCount}
@@ -456,17 +467,64 @@ Generated: {timestamp}
 - Edges: ${edgeCount}
 - JSON: ${jsonFilePath}
 - Tech Spec: ${specFilePath}
-
-Next steps:
-1. Review JSON in FlowSpec desktop app
-2. Use tech spec for implementation planning
-3. Generate code with: /spec ${jsonFilePath}
 ```
 
-**Checkpoint 8.1:** Workflow complete
+**Checkpoint 8.1:** Export complete
 ```
-✓ FINALIZE done → state: DONE
+✓ FINALIZE done → state: CONFIRM
 ```
+
+---
+
+### Phase 9: CONFIRM (User Approval — HARD GATE)
+
+**This phase is mandatory. Do NOT skip it.**
+
+The FlowSpec spec must be reviewed and explicitly approved by the user before any implementation work begins. This prevents wasted effort from building against an incomplete or incorrect spec.
+
+**Step 9.1:** Present the spec for review
+```
+ASK: "Please review the FlowSpec project in the desktop app (or the exported JSON).
+
+Check:
+1. All screens and data elements are represented
+2. Data flows between components are correct
+3. Transform logic matches your requirements
+4. No missing or duplicate nodes
+
+When you're satisfied, confirm and I'll proceed to implementation.
+Is the spec complete and correct? [yes / needs changes]"
+```
+
+**Step 9.2:** Handle response
+```
+IF "needs changes":
+  → Ask what needs changing
+  → Apply changes via MCP tools
+  → Re-export JSON
+  → Re-run VALIDATE (quality checks)
+  → Return to Step 9.1 (re-present for review)
+
+IF "yes" / confirmed:
+  → Record confirmation timestamp
+  → state: DONE
+```
+
+**Step 9.3:** Post-confirmation next steps
+```
+✅ FlowSpec spec confirmed by user.
+
+Ready for implementation. You can now:
+1. Generate code with: /spec ${jsonFilePath}
+2. Use the tech spec for manual implementation planning
+```
+
+**Checkpoint 9.1:** Spec confirmed
+```
+✓ User confirmed spec → state: DONE
+```
+
+> **IMPORTANT:** Only after reaching DONE with user confirmation should you invoke `/spec` or begin any implementation. If the user asks to implement during FINALIZE or earlier phases, remind them the spec needs review and confirmation first.
 
 ---
 
@@ -735,6 +793,7 @@ IF any check fails:
    - VALIDATE → re-run analysis
    - REFINE → continue layout/regions
    - FINALIZE → re-export
+   - CONFIRM → re-present spec for user review
 ```
 
 **State transition failure?**
@@ -798,17 +857,17 @@ See [codebase-analysis.md](references/codebase-analysis.md) for UC2 full pipelin
 
 A FlowSpec project is **complete** when:
 
-✅ All phases reached FINALIZE state
+✅ All phases reached CONFIRM state
 ✅ Quality gate passed (0 issues)
 ✅ JSON exported to file
 ✅ Tech spec generated
 ✅ Regions linked to screens (if wireframes used)
 ✅ Layout optimized (auto-layout or smart layout applied)
-✅ User confirmed satisfaction
+✅ **User explicitly confirmed the spec is correct** (HARD GATE)
 
 **Output artifacts:**
 - `${projectName}_flowspec.json` (importable spec)
 - `${projectName}_tech_spec.md` (implementation guide)
 - FlowSpec project (viewable in desktop app)
 
-**Next step:** Generate implementation code with `/spec ${projectName}_flowspec.json`
+**Next step:** Only after user confirmation → `/spec ${projectName}_flowspec.json`
