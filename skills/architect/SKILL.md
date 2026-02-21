@@ -317,6 +317,7 @@ analysis = flowspec_analyse_project(projectId)
 Check for:
 - ✅ Orphan nodes (no edges)
 - ✅ Exact duplicate labels
+- ✅ **TBD / unresolved types** (DataPoints still set to `TBD`)
 - ✅ **Naming convention violations** (mixed-case, special chars, inconsistent prefixes)
 - ✅ **Fuzzy duplicates** (near matches via Levenshtein/cosine)
 - ✅ **Unreachable subgraphs** (isolated clusters)
@@ -858,7 +859,7 @@ See [codebase-analysis.md](references/codebase-analysis.md) for UC2 full pipelin
 A FlowSpec project is **complete** when:
 
 ✅ All phases reached CONFIRM state
-✅ Quality gate passed (0 issues)
+✅ Quality gate passed (0 issues) — in strict mode, aim for zero errors and zero warnings
 ✅ JSON exported to file
 ✅ Tech spec generated
 ✅ Regions linked to screens (if wireframes used)

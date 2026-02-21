@@ -286,6 +286,10 @@ Edge flows-to                → data moves between nodes (the only edge type)
 
 > **Edge type note:** All edges are `flows-to`. The direction of data flow and the Transform's `type` property (formula/validation/workflow) convey the semantic meaning.
 
+### Validation Section
+
+The spec may include an optional `validation` section with `mode` (`design` or `strict`), `isValid`, `errorCount`, and `warningCount`. In **strict mode**, errors block export — help the user fix all errors before exporting. In **design mode**, issues appear as hints only and do not block export.
+
 For the complete JSON schema with all field types and enums, see [references/json-schema.md](references/json-schema.md).
 
 For a worked example showing the full implementation flow, see [references/implementation-walkthrough.md](references/implementation-walkthrough.md).
