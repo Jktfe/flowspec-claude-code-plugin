@@ -1,6 +1,6 @@
-# FlowSpec MCP Tools Reference (v3.0.0)
+# FlowSpec MCP Tools Reference (v4.0.0)
 
-All 25 tools provided by the FlowSpec MCP server. Tool names are prefixed with `flowspec_` when called.
+All 29 tools provided by the FlowSpec MCP server. Tool names are prefixed with `flowspec_` when called.
 
 ---
 
@@ -386,6 +386,63 @@ Remove a region from a screen.
 | `regionId` | string | Yes | UUID of the region |
 
 **Returns:** Confirmation of removal.
+
+---
+
+## Decision Tree Tools (v4.0.0)
+
+### flowspec_list_decision_trees
+
+List all decision trees for a project.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectId` | string | Yes | UUID of the project |
+
+**Returns:** Markdown list of trees with name, ID, source node label, trace depth, and last-updated timestamp.
+
+---
+
+### flowspec_get_decision_tree
+
+Get a decision tree with full node/edge structure.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectId` | string | Yes | UUID of the project |
+| `treeId` | string | Yes | ID of the decision tree |
+
+**Returns:** Tree summary (name, description, source, trace depth) plus full JSON structure of decision/condition/outcome nodes and edges.
+
+---
+
+### flowspec_delete_decision_tree
+
+Delete a decision tree from a project.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectId` | string | Yes | UUID of the project |
+| `treeId` | string | Yes | ID of the decision tree |
+
+**Returns:** Confirmation of deletion.
+
+---
+
+### flowspec_analyse_decision_tree
+
+Analyse a decision tree's structure and quality.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectId` | string | Yes | UUID of the project |
+| `treeId` | string | Yes | ID of the decision tree |
+
+**Returns:** Analysis report with:
+- Summary: total nodes, edges, max depth, leaf node count
+- Node type distribution
+- Outcome distribution (approve/reject/escalate/etc.)
+- Issues: orphan nodes, under-branched decisions (<2 branches), non-outcome leaf nodes
 
 ---
 

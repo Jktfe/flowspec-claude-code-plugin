@@ -20,7 +20,8 @@ Current schema version: `1.2.0`
   "transforms": "Transform[]",      // All business logic nodes
   "tables": "Table[]",              // Data persistence sources (v1.2.0+)
   "dataFlow": "Edge[]",             // All connections between nodes
-  "screens": "Screen[]"             // Annotated wireframe screens with regions (v1.1.0+)
+  "screens": "Screen[]",            // Annotated wireframe screens with regions (v1.1.0+)
+  "decisionTrees": "DecisionTree[]" // Decision trees generated from workflow/validation transforms (v1.3.0+)
 }
 ```
 
@@ -264,6 +265,57 @@ An annotated wireframe or screenshot with regions mapping UI areas to data eleme
 - Elements reference node IDs from the dataPoints/components/transforms/tables sections
 - A node can appear in multiple regions across multiple screens
 - `componentNodeId` links a region to a Component node on the canvas (optional)
+
+---
+
+## DecisionTree (v1.3.0+)
+
+A decision tree generated from a workflow or validation Transform node by tracing upstream data flow.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | `string` | Yes | Unique tree ID |
+| `name` | `string` | Yes | Human-readable tree name |
+| `description` | `string` | No | What this decision tree represents |
+| `generatedFromNodeId` | `string` | No | Source Transform node ID |
+| `generatedFromNodeLabel` | `string` | No | Source Transform node label |
+| `traceDepth` | `number` | Yes | How many levels upstream were traced |
+| `treeData` | `TreeData` | Yes | The tree structure (nodes, edges, rootNodeId) |
+
+### TreeData
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `nodes` | `TreeNode[]` | Decision tree nodes |
+| `edges` | `TreeEdge[]` | Connections between tree nodes |
+| `rootNodeId` | `string` | ID of the root node |
+
+### TreeNode
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique node ID |
+| `type` | `"decision" \| "condition" \| "outcome"` | Node type |
+| `label` | `string` | Display label |
+| `question` | `object` | Decision question (for `decision` type) |
+| `condition` | `object` | Condition details (for `condition` type) |
+| `outcome` | `object` | Outcome result (for `outcome` type): `{ result: "approve" \| "reject" \| "escalate" \| ... }` |
+
+### TreeEdge
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique edge ID |
+| `source` | `string` | Source tree node ID |
+| `target` | `string` | Target tree node ID |
+| `label` | `string` | Edge label (e.g. "yes", "no", condition text) |
+
+### Notes
+
+- Decision trees are optional — most projects won't have them
+- Generated from Transform nodes of type `workflow` or `validation`
+- Use `flowspec_list_decision_trees` and `flowspec_analyse_decision_tree` MCP tools to inspect
+- Tree analysis detects: orphan nodes, under-branched decisions, non-outcome leaves
 
 ---
 
