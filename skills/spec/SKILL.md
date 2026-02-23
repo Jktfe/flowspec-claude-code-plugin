@@ -245,6 +245,26 @@ async function processOrder(input: OrderInput): Promise<OrderResult> {
 
 ---
 
+## Decision Trees for Workflow Transforms
+
+When a spec contains Transform nodes with `type: workflow` or `type: validation`, FlowSpec can generate **decision trees** that trace the upstream data flow and build a standalone tree visualisation. If you have the FlowSpec MCP server configured, you can query these trees during implementation:
+
+```
+flowspec_list_decision_trees(projectId)          // List all trees in the project
+flowspec_get_decision_tree(projectId, treeId)    // Get a specific tree with full structure
+flowspec_analyse_decision_tree(projectId, treeId) // Run depth/orphan/outcome analysis
+```
+
+Decision trees complement the main spec by providing a visual breakdown of complex branching logic. When implementing a `workflow` or `validation` Transform with complex conditional paths, check whether a decision tree exists — it may provide clearer implementation guidance than the Transform's `logic.content` field alone.
+
+### When to use decision trees:
+
+1. **Multi-branch workflows** — transforms with multiple conditional outcomes
+2. **Validation chains** — transforms that check several conditions in sequence
+3. **Upstream dependency tracing** — understanding which data feeds into a complex transform
+
+---
+
 ## Common Mistakes
 
 ### 1. Making inferred data editable

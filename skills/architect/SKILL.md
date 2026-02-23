@@ -396,6 +396,41 @@ IF user selects direction:
 
 ---
 
+### Phase 7.5: DECISION TREES (Optional — Workflow Analysis)
+
+If the project contains Transform nodes with `type: workflow` or `type: validation`, offer to generate decision trees for deeper analysis.
+
+**Step 7.5.1:** Identify candidate transforms
+```
+Search for transforms with type "workflow" or "validation" in the project.
+If none found → skip to Phase 8.
+```
+
+**Step 7.5.2:** Check for existing trees
+```
+flowspec_list_decision_trees(projectId)
+
+If trees exist, offer analysis:
+  flowspec_analyse_decision_tree(projectId, treeId)
+
+If no trees exist, inform user they can generate them
+from the FlowSpec UI (click tree icon on transform node).
+```
+
+**Step 7.5.3:** Include in tech spec
+```
+If decision trees exist, add a "Decision Trees" section to the
+tech spec listing each tree with its root transform, depth,
+branch count, and analysis summary.
+```
+
+**Checkpoint 7.5.1:** Decision tree review complete
+```
+✓ Decision trees reviewed → state: FINALIZE
+```
+
+---
+
 ### Phase 8: FINALIZE (Export & Tech Spec)
 
 **Step 8.1:** Export final JSON
