@@ -596,7 +596,7 @@ If no indexable files are found, create the index with an empty `files` object a
 flowspec_create_project({ name: "My App (indexed)" })
 # Returns projectId
 
-# Create nodes — flowspec_create_node only accepts: datapoint, component, transform, table
+# Create nodes — flowspec_create_node accepts: datapoint, component, transform, table, actor
 for each dataPoint in spec.dataPoints:
   flowspec_create_node({ projectId, type: "datapoint", label: dataPoint.label, data: { ... } })
 
@@ -608,6 +608,9 @@ for each transform in spec.transforms:
 
 for each table in spec.tables:
   flowspec_create_node({ projectId, type: "table", label: table.label, data: { ... } })
+
+for each actor in spec.actors:
+  flowspec_create_node({ projectId, type: "actor", label: actor.label, data: { actorType: actor.actorType, description: actor.description } })
 
 # Create screens — use flowspec_create_screen (NOT flowspec_create_node)
 for each screen in spec.screens:
@@ -628,7 +631,7 @@ for each edge in spec.dataFlow:
 flowspec_auto_layout({ projectId })
 ```
 
-> **Important:** `flowspec_create_node` only accepts `datapoint`, `component`, `transform`, and `table` as the `type` parameter. Screens and images have their own dedicated MCP tools.
+> **Important:** `flowspec_create_node` accepts `datapoint`, `component`, `transform`, `table`, and `actor` as the `type` parameter. Screens and images have their own dedicated MCP tools.
 
 ### Append to Existing Project
 

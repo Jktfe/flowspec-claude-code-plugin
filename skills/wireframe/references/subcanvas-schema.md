@@ -39,7 +39,7 @@ A single data element positioned on the wireframe screenshot.
 |-------|------|----------|-------------|
 | `sourceNodeId` | `string` | Yes | ID of the node in the main FlowSpec spec (e.g., `dp-user-email`) |
 | `sourceNodeLabel` | `string` | Yes | Human-readable label (e.g., "User Email") |
-| `sourceNodeType` | `string` | Yes | Node type: `datapoint`, `component`, or `transform` |
+| `sourceNodeType` | `string` | Yes | Node type: `datapoint`, `component`, `transform`, `table`, or `actor` |
 | `position` | `Position` | Yes | Percentage-based position on the screenshot |
 
 ### Position

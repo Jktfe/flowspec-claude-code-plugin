@@ -49,7 +49,7 @@ Search for nodes by label across all projects.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | Search term to match against node labels |
-| `nodeType` | enum | No | Filter: `datapoint`, `component`, or `transform` |
+| `nodeType` | enum | No | Filter: `datapoint`, `component`, `transform`, `table`, `screen`, `image`, or `actor` |
 
 **Returns:** Markdown list of matches with label, nodeType, projectName, nodeId, projectId.
 
@@ -129,7 +129,7 @@ Add a node to a project.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `projectId` | string | Yes | UUID of the project |
-| `type` | enum | Yes | `datapoint`, `component`, `transform`, or `table` |
+| `type` | enum | Yes | `datapoint`, `component`, `transform`, `table`, or `actor` |
 | `position` | `{x, y}` | Yes | Canvas position |
 | `data` | object | Yes | Node data (varies by type — see below) |
 
@@ -139,6 +139,7 @@ Add a node to a project.
 - **component**: `{ label, displays, captures, wireframeRef? }`
 - **transform**: `{ label, type, description, inputs, outputs, logic }`
 - **table**: `{ label, sourceType, columns, endpoint? }`
+- **actor**: `{ label, actorType, description }` — actorType: `user`, `ai`, `third-party`, or `tbd`
 
 **Returns:** Created node with generated UUID.
 

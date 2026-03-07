@@ -247,7 +247,7 @@ An annotated wireframe or screenshot with regions mapping UI areas to data eleme
             {
               "nodeId": "string",        // Reference to a DataPoint/Component/Transform ID
               "nodeLabel": "string",     // Label of the referenced node
-              "nodeType": "string"       // datapoint | component | transform | table
+              "nodeType": "string"       // datapoint | component | transform | table | actor
             }
           ],
           "componentNodeId": "string"    // Optional: promoted Component node ID
