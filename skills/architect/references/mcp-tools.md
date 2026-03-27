@@ -1,6 +1,6 @@
-# FlowSpec MCP Tools Reference (v4.0.0)
+# FlowSpec MCP Tools Reference (v5.6.0)
 
-All 29 tools provided by the FlowSpec MCP server. Tool names are prefixed with `flowspec_` when called.
+All 32 tools provided by the FlowSpec MCP server. Tool names are prefixed with `flowspec_` when called.
 
 ---
 
@@ -444,6 +444,51 @@ Analyse a decision tree's structure and quality.
 - Node type distribution
 - Outcome distribution (approve/reject/escalate/etc.)
 - Issues: orphan nodes, under-branched decisions (<2 branches), non-outcome leaf nodes
+
+---
+
+## Boring Logic Board Tools (v5.6.0)
+
+Each project has one optional Boring Logic board — a separate infinite canvas for sketching data logic using four node types: **input**, **output**, **process**, and **decision**. The cross-reference engine automatically matches logic nodes against main canvas nodes to surface gaps.
+
+### flowspec_get_logic_board
+
+Get the Boring Logic board for a project.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectId` | string | Yes | UUID of the project |
+
+**Returns:** JSON with `{ id, boardData: { nodes, edges }, createdAt, updatedAt }`. Returns `{ id: null, boardData: { nodes: [], edges: [] } }` if no board exists yet.
+
+---
+
+### flowspec_upsert_logic_board
+
+Save (create or replace) the Boring Logic board for a project.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectId` | string | Yes | UUID of the project |
+| `boardData` | object | Yes | `{ nodes: [...], edges: [...] }` — full logic board state |
+
+**Node shape:**
+```json
+{
+  "id": "logic-input-<uuid>",
+  "type": "logic-input",
+  "position": { "x": 100, "y": 200 },
+  "data": {
+    "label": "User Credentials",
+    "logicType": "input",
+    "description": "Username and password from login form"
+  }
+}
+```
+
+**Valid `type` values:** `logic-input`, `logic-output`, `logic-process`, `logic-decision`
+
+**Returns:** `{ id, success: true }`.
 
 ---
 
